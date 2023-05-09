@@ -129,7 +129,8 @@ function restartRelaySubs() {
     pool.subscribe("subid", 
         {
             kinds: [4],
-            '#e': Array.from( db.keys() ).map ( elem => elem.substring(0,6) )
+            since: Math.floor(Date.now() / 1000), 
+            "#p": Array.from( Array.from( db.keys() ) )
         }
     );
 
