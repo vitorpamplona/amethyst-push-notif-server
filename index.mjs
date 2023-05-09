@@ -51,7 +51,7 @@ function register(token, events) {
                 let tokens = db.get(event.pubkey)
                 if (!tokens.has(tokenTag[1])) {
                     newPubKeys = true 
-                    db.set(event.pubkey, db.get(event.pubkey).add(tokenTag[1]))
+                    db.set(event.pubkey, tokens.add(tokenTag[1]))
                 }
             } else {
                 db.set(event.pubkey, new Set().add(tokenTag[1]))
@@ -85,6 +85,9 @@ function register(token, events) {
 
 function notify(event) {
     let tokens = db.get(event.pubkey)
+
+    console.log(tokens)
+
     const message = {
         data: {
             event: JSON.stringify(event),
