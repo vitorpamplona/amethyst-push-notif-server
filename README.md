@@ -1,4 +1,4 @@
-# amethyst-push-notif-server
+# Amethyst Push Notification Server
 A simple push notification server for Nostr events. 
 
 # Deployment Overview
