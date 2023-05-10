@@ -5,6 +5,7 @@ import {SimplePool} from 'nostr-tools'
 import { verifySignature } from 'nostr-tools'
 
 import { RelayPool } from 'nostr'
+import { LRUCache } from 'lru-cache'
 
 const app = express()
 app.use(bodyparser.json())
@@ -16,6 +17,18 @@ var pool;
 var db = new Map();
 var relays = new Set();
 
+const sentCache = new LRUCache(
+    {
+        max: 500,
+        maxSize: 5000,
+        sizeCalculation: (value, key) => {
+            return 1
+        },
+        // how long to live in ms
+        ttl: 1000 * 60 * 5,
+    }
+)
+
 app.post('/register', (req, res) => {
     const token = req.body.token
     const events = req.body.events
@@ -26,7 +39,7 @@ app.post('/register', (req, res) => {
 })
 
 app.listen(port, () => {
-    console.log("listening to port" + port)
+    console.log("Listening to port" + port)
 })
 
 // -- registering tokens with pubkeys. 
@@ -84,9 +97,11 @@ function register(token, events) {
 // -- notifiying new events to pub keys. 
 
 function notify(event) {
+    if (sentCache.has(event.id)) return
+
     let pubkeyTag = event.tags.find(tag => tag[0] == "p" && tag.length > 1)
     if (pubkeyTag && pubkeyTag[1]) {
-        console.log("new kind-", event.kind, "event for ", pubkeyTag[1])
+        console.log("New kind", event.kind, "event for", pubkeyTag[1])
         let tokens = db.get(pubkeyTag[1])
 
         const message = {
@@ -95,6 +110,8 @@ function notify(event) {
             },
             tokens: Array.from(tokens)
         };
+
+        sentCache.set(event.id, pubkeyTag[1])
 
         admin.messaging().sendEachForMulticast(message)
     }
@@ -119,14 +136,14 @@ function restartRelayPool() {
     });
     
     pool.on('eose', relay => {
-        console.log("eose")
+        console.log("EOSE")
     });
     
     pool.on('event', (relay, sub_id, ev) => {
         notify(ev)
     });
 
-    console.log("restarted pool with ", relays.length, " relays and ", db.keys().length, " keys")
+    console.log("Restarted pool with", relays.length, "relays and", db.keys().length, "keys")
 }
 
 function restartRelaySubs() {
@@ -138,5 +155,5 @@ function restartRelaySubs() {
         }
     );
 
-    console.log("restarted subs with ", db.keys().length, " keys")
+    console.log("Restarted subs with", db.keys().length, "keys")
 }
