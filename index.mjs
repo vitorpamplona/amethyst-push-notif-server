@@ -143,7 +143,7 @@ function restartRelayPool() {
         notify(ev)
     });
 
-    console.log("Restarted pool with", relays.length, "relays and", db.keys().length, "keys")
+    console.log("Restarted pool with", relays.size, "relays and", db.size, "keys")
 }
 
 function restartRelaySubs() {
@@ -155,5 +155,5 @@ function restartRelaySubs() {
         }
     );
 
-    console.log("Restarted subs with", db.keys().length, "keys")
+    console.log("Restarted subs with", db.size, "keys")
 }
