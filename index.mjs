@@ -128,7 +128,7 @@ function restartRelayPool() {
     pool.on('open', relay => {
         relay.subscribe("subid", 
             {
-                kinds: [4],
+                kinds: [4, 9735],
                 since: Math.floor(Date.now() / 1000), 
                 "#p": Array.from( Array.from( db.keys() ) )
             }
@@ -149,7 +149,7 @@ function restartRelayPool() {
 function restartRelaySubs() {
     pool.subscribe("subid", 
         {
-            kinds: [4],
+            kinds: [4, 9735],
             since: Math.floor(Date.now() / 1000), 
             "#p": Array.from( Array.from( db.keys() ) )
         }
