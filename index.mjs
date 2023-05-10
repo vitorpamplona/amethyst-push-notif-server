@@ -84,18 +84,19 @@ function register(token, events) {
 // -- notifiying new events to pub keys. 
 
 function notify(event) {
-    let tokens = db.get(event.pubkey)
+    let pubkeyTag = event.tags.find(tag => tag[0] == "p" && tag.length > 1)
+    if (pubkeyTag && pubkeyTag[1]) {
+        let tokens = db.get(pubkeyTag[1])
 
-    console.log(tokens)
+        const message = {
+            data: {
+                event: JSON.stringify(event),
+            },
+            tokens: Array.from(tokens)
+        };
 
-    const message = {
-        data: {
-            event: JSON.stringify(event),
-        },
-        tokens: Array.from(tokens)
-    };
-
-    admin.messaging().sendEachForMulticast(message)
+        admin.messaging().sendEachForMulticast(message)
+    }
 }
 
 // -- relay connection
@@ -121,8 +122,8 @@ function restartRelayPool() {
     });
     
     pool.on('event', (relay, sub_id, ev) => {
-        notify(ev)
         console.log(ev)
+        notify(ev)
     });
 
     console.log("restarted pool")
