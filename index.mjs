@@ -86,6 +86,7 @@ function register(token, events) {
 function notify(event) {
     let pubkeyTag = event.tags.find(tag => tag[0] == "p" && tag.length > 1)
     if (pubkeyTag && pubkeyTag[1]) {
+        console.log("new kind-", event.kind, "event for ", pubkeyTag[1])
         let tokens = db.get(pubkeyTag[1])
 
         const message = {
@@ -122,11 +123,10 @@ function restartRelayPool() {
     });
     
     pool.on('event', (relay, sub_id, ev) => {
-        console.log(ev)
         notify(ev)
     });
 
-    console.log("restarted pool")
+    console.log("restarted pool with ", relays.length, " relays and ", db.keys().length, " keys")
 }
 
 function restartRelaySubs() {
@@ -138,5 +138,5 @@ function restartRelaySubs() {
         }
     );
 
-    console.log("new sub")
+    console.log("restarted subs with ", db.keys().length, " keys")
 }
