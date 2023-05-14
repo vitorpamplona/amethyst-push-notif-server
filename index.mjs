@@ -163,7 +163,7 @@ async function restartRelaySubs() {
         }
     );
 
-    console.log("Restarted subs with", keys.size, "keys")
+    console.log("Restarted subs with", keys.length, "keys")
 }
 
 restartRelayPool()
