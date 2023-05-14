@@ -3,19 +3,24 @@ import bodyparser from 'body-parser'
 import { admin } from './firebase-config.js'
 import {SimplePool} from 'nostr-tools'
 import { verifySignature } from 'nostr-tools'
-
 import { RelayPool } from 'nostr'
 import { LRUCache } from 'lru-cache'
+
+import { 
+    registerInDatabase, 
+    getAllKeys, 
+    getAllRelays, 
+    getTokensByPubKey, 
+    checkIfPubKeyExists, 
+    checkIfRelayExists 
+} from './database.mjs'
 
 const app = express()
 app.use(bodyparser.json())
 
 const port = process.env.PORT || 3000
 
-var pool;
-
-var db = new Map();
-var relays = new Set();
+var relayPool;
 
 const sentCache = new LRUCache(
     {
@@ -33,9 +38,9 @@ app.post('/register', (req, res) => {
     const token = req.body.token
     const events = req.body.events
 
-    const processed = register(token, events)
-
-    res.status(200).send(processed)
+    register(token, events).then((processed) => {
+        res.status(200).send(processed)
+    });
 })
 
 app.listen(port, () => {
@@ -44,13 +49,13 @@ app.listen(port, () => {
 
 // -- registering tokens with pubkeys. 
 
-function register(token, events) {
+async function register(token, events) {
     let processed = []
 
     let newPubKeys = false
     let newRelays = false
 
-    events.forEach(event => {
+    for (const event of events) {
         let veryOk = verifySignature(event)
         
         let tokenTag = event.tags
@@ -60,21 +65,19 @@ function register(token, events) {
             .find(tag => tag[0] == "relay" && tag.length > 1)
 
         if (tokenTag && veryOk) {
-            if (db.has(event.pubkey)) {
-                let tokens = db.get(event.pubkey)
-                if (!tokens.has(tokenTag[1])) {
-                    newPubKeys = true 
-                    db.set(event.pubkey, tokens.add(tokenTag[1]))
-                }
-            } else {
-                db.set(event.pubkey, new Set().add(tokenTag[1]))
+            let keyExist = await checkIfPubKeyExists(event.pubkey)
+
+            if (!keyExist) {
                 newPubKeys = true
             }
 
-            if (relayTag && !relays.has(relayTag[1])) {
+            let relayExist = await checkIfRelayExists(relayTag[1])
+            
+            if (!relayExist) {
                 newRelays = true
-                relays.add(relayTag[1])
             }
+
+            await registerInDatabase(event.pubkey,relayTag[1],tokenTag[1])
         }    
 
         processed.push(
@@ -83,7 +86,7 @@ function register(token, events) {
                 "added": veryOk
             }
         )
-    });
+    }
 
     if (newRelays)
         restartRelayPool()
@@ -96,19 +99,19 @@ function register(token, events) {
 
 // -- notifiying new events to pub keys. 
 
-function notify(event) {
+async function notify(event) {
     if (sentCache.has(event.id)) return
 
     let pubkeyTag = event.tags.find(tag => tag[0] == "p" && tag.length > 1)
     if (pubkeyTag && pubkeyTag[1]) {
         console.log("New kind", event.kind, "event for", pubkeyTag[1])
-        let tokens = db.get(pubkeyTag[1])
+        let tokens = await getTokensByPubKey(pubkeyTag[1])
 
         const message = {
             data: {
                 event: JSON.stringify(event),
             },
-            tokens: Array.from(tokens)
+            tokens: tokens
         };
 
         sentCache.set(event.id, pubkeyTag[1])
@@ -118,42 +121,49 @@ function notify(event) {
 }
 
 // -- relay connection
-function restartRelayPool() {
-    if (pool) {
-        pool.close()
+async function restartRelayPool() {
+    if (relayPool) {
+        relayPool.close()
     }
 
-    pool = RelayPool( Array.from( relays ), {reconnect: true} )
+    let relays = await getAllRelays()
+    let keys = await getAllKeys()
 
-    pool.on('open', relay => {
+    relayPool = RelayPool( Array.from( relays ), {reconnect: true} )
+
+    relayPool.on('open', relay => {
         relay.subscribe("subid", 
             {
                 kinds: [4, 9735],
                 since: Math.floor(Date.now() / 1000), 
-                "#p": Array.from( Array.from( db.keys() ) )
+                "#p": keys
             }
         )
     });
     
-    pool.on('eose', relay => {
+    relayPool.on('eose', relay => {
         console.log("EOSE")
     });
     
-    pool.on('event', (relay, sub_id, ev) => {
+    relayPool.on('event', (relay, sub_id, ev) => {
         notify(ev)
     });
 
-    console.log("Restarted pool with", relays.size, "relays and", db.size, "keys")
+    console.log("Restarted pool with", relays.length, "relays and", keys.length, "keys")
 }
 
-function restartRelaySubs() {
-    pool.subscribe("subid", 
+async function restartRelaySubs() {
+    let keys = await getAllKeys()
+
+    relayPool.subscribe("subid", 
         {
             kinds: [4, 9735],
             since: Math.floor(Date.now() / 1000), 
-            "#p": Array.from( Array.from( db.keys() ) )
+            "#p": keys
         }
     );
 
-    console.log("Restarted subs with", db.size, "keys")
+    console.log("Restarted subs with", keys.size, "keys")
 }
+
+restartRelayPool()
