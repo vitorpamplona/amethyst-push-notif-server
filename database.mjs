@@ -34,8 +34,10 @@ export async function getAllKeys() {
 
 export async function getAllRelays() {
     const result = await pgPool.query(
-        `SELECT DISTINCT rtrim(RELAY,'/') AS relay
-         FROM subscriptions
+        `SELECT rtrim(RELAY,'/') AS relay, COUNT(*) AS votes
+        FROM subscriptions 
+        group by relay
+        order by votes desc
         `
     )
 
@@ -49,7 +51,9 @@ export async function getAllRelays() {
             && !row.relay.includes("wss://wss:")
             && !row.relay.includes("weixin")
         ) {
-            relays.push(row.relay)
+            if (row.votes > 5) {
+                relays.push(row.relay)
+            }
         }
     }
     return relays
