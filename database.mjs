@@ -10,7 +10,7 @@ export async function getTokensByPubKey(pubkey) {
 
     if (!result || !result.rows || !result.rows.length) return [];
 
-    var tokens = []
+    let tokens = []
     for (let row of result.rows) {
         tokens.push(row.token)
     }
@@ -25,7 +25,7 @@ export async function getAllKeys() {
     )
     if (!result || !result.rows || !result.rows.length) return [];
 
-    var keys = []
+    let keys = []
     for (let row of result.rows) {
         keys.push(row.key)
     }
@@ -34,14 +34,14 @@ export async function getAllKeys() {
 
 export async function getAllRelays() {
     const result = await pgPool.query(
-        `SELECT DISTINCT RELAY AS relay
+        `SELECT DISTINCT rtrim(RELAY,'/') AS relay
          FROM subscriptions
         `
     )
 
     if (!result || !result.rows || !result.rows.length) return [];
 
-    var relays = []
+    let relays = []
     for (let row of result.rows) {
         if (
             !row.relay.includes("127.0.0.") 
