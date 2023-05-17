@@ -29,7 +29,7 @@ export async function getAllKeys() {
     for (let row of result.rows) {
         keys.push(row.key)
     }
-    return keys.slice(0, 1000)
+    return keys
 }
 
 export async function getAllRelays() {
@@ -51,7 +51,7 @@ export async function getAllRelays() {
             relays.push(row.relay)
         }
     }
-    return relays.slice(0,100)
+    return relays
 }
 
 export async function registerInDatabase(pubkey, relay, token) {
