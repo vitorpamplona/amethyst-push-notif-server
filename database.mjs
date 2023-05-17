@@ -27,7 +27,7 @@ export async function getAllKeys() {
 
     var keys = []
     for (let row of result.rows) {
-        keys.push(row.key)
+        keys.push(row.key.slice(0,6))
     }
     return keys
 }
