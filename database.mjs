@@ -27,9 +27,9 @@ export async function getAllKeys() {
 
     var keys = []
     for (let row of result.rows) {
-        keys.push(row.key.slice(0,6))
+        keys.push(row.key)
     }
-    return keys
+    return keys.slice(0, 1000)
 }
 
 export async function getAllRelays() {
