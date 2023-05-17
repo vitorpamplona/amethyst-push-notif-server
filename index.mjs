@@ -150,7 +150,7 @@ async function restartRelayPool() {
     });
 
     relayPool.on('error', (relay, e) => {
-		console.log(relay, e.message)
+		console.log("Error", relay.url, e.message)
 	})
 
     console.log("Restarted pool with", relays.length, "relays and", keys.length, "keys")
