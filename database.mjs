@@ -51,7 +51,7 @@ export async function getAllRelays() {
             && !row.relay.includes("wss://wss:")
             && !row.relay.includes("weixin")
         ) {
-            if (row.votes > 5) {
+            if (row.votes > 2) {
                 relays.push(row.relay)
             }
         }

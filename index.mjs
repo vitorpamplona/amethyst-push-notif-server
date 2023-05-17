@@ -100,11 +100,6 @@ async function register(token, events) {
 // -- notifiying new events to pub keys. 
 
 async function notify(event, relay) {
-    console.log("New event before cache check", event.id, " from ", relay.url)
-
-    if (sentCache.has(event.id)) return
-    sentCache.set(event.id, event.id)
-
     let pubkeyTag = event.tags.find(tag => tag[0] == "p" && tag.length > 1)
     if (pubkeyTag && pubkeyTag[1]) {
         console.log("New kind", event.kind, "event for", pubkeyTag[1])
@@ -154,6 +149,9 @@ async function restartRelayPool() {
     });
     
     relayPool.on('event', (relay, sub_id, ev) => {
+        if (sentCache.has(ev.id)) return
+        sentCache.set(ev.id, ev.id)
+
         notify(ev, relay)
     });
 
