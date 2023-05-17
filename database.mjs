@@ -43,8 +43,9 @@ export async function getAllRelays() {
 
     var relays = []
     for (let row of result.rows) {
-        if (!row.relay.includes("127.0.0."))
+        if (!row.relay.includes("127.0.0.") && !row.relay.includes("//umbrel:")) {
             relays.push(row.relay)
+        }
     }
     return relays
 }
