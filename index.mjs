@@ -120,8 +120,14 @@ async function notify(event) {
     }
 }
 
+var isInRelayPollFunction = false
+
+
 // -- relay connection
 async function restartRelayPool() {
+    if (isInRelayPollFunction) return 
+    isInRelayPollFunction = true
+
     if (relayPool) {
         relayPool.close()
     }
@@ -154,9 +160,15 @@ async function restartRelayPool() {
 	})
 
     console.log("Restarted pool with", relays.length, "relays and", keys.length, "keys")
+    isInRelayPollFunction = false
 }
 
+var isInSubRestartFunction = false
+
 async function restartRelaySubs() {
+    if (isInSubRestartFunction) return 
+    isInSubRestartFunction = true
+    
     let keys = await getAllKeys()
 
     relayPool.subscribe("subid", 
@@ -168,6 +180,7 @@ async function restartRelaySubs() {
     );
 
     console.log("Restarted subs with", keys.length, "keys")
+    isInSubRestartFunction = false
 }
 
 restartRelayPool()
