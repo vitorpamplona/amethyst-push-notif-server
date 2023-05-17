@@ -51,7 +51,7 @@ export async function getAllRelays() {
             relays.push(row.relay)
         }
     }
-    return relays
+    return relays.slice(0,100)
 }
 
 export async function registerInDatabase(pubkey, relay, token) {
