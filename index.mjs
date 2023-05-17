@@ -110,14 +110,16 @@ async function notify(event, relay) {
         console.log("New kind", event.kind, "event for", pubkeyTag[1])
         let tokens = await getTokensByPubKey(pubkeyTag[1])
 
-        const message = {
-            data: {
-                event: JSON.stringify(event),
-            },
-            tokens: tokens
-        };
-
-        admin.messaging().sendEachForMulticast(message)
+        if (tokens.length > 0) {
+            const message = {
+                data: {
+                    event: JSON.stringify(event),
+                },
+                tokens: tokens
+            };
+    
+            admin.messaging().sendEachForMulticast(message)
+        }
     }
 }
 
@@ -142,8 +144,7 @@ async function restartRelayPool() {
         relay.subscribe("subid", 
             {
                 kinds: [4, 9735],
-                since: Math.floor(Date.now() / 1000), 
-                "#p": keys
+                since: Math.floor(Date.now() / 1000)
             }
         )
     });
@@ -175,8 +176,7 @@ async function restartRelaySubs() {
     relayPool.subscribe("subid", 
         {
             kinds: [4, 9735],
-            since: Math.floor(Date.now() / 1000), 
-            "#p": keys
+            since: Math.floor(Date.now() / 1000)
         }
     );
 
