@@ -43,7 +43,8 @@ export async function getAllRelays() {
 
     var relays = []
     for (let row of result.rows) {
-        relays.push(row.relay)
+        if (!row.relay.includes("127.0.0."))
+            relays.push(row.relay)
     }
     return relays
 }
