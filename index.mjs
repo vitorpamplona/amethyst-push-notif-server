@@ -100,7 +100,7 @@ async function register(token, events) {
 // -- notifiying new events to pub keys. 
 
 async function notify(event) {
-    console.log("New kind before cache check", event.kind, "event for", pubkeyTag[1])
+    console.log("New kind before cache check", event.id)
 
     if (sentCache.has(event.id)) return
     sentCache.set(event.id, event.id)
