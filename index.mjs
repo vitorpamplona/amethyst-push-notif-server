@@ -142,12 +142,16 @@ async function restartRelayPool() {
     });
     
     relayPool.on('eose', relay => {
-        console.log("EOSE")
+        //console.log("EOSE")
     });
     
     relayPool.on('event', (relay, sub_id, ev) => {
         notify(ev)
     });
+
+    relayPool.on('error', (relay, e) => {
+		console.log(relay, e.message)
+	})
 
     console.log("Restarted pool with", relays.length, "relays and", keys.length, "keys")
 }
