@@ -101,6 +101,7 @@ async function register(token, events) {
 
 async function notify(event) {
     if (sentCache.has(event.id)) return
+    sentCache.set(event.id, event.id)
 
     let pubkeyTag = event.tags.find(tag => tag[0] == "p" && tag.length > 1)
     if (pubkeyTag && pubkeyTag[1]) {
@@ -113,8 +114,6 @@ async function notify(event) {
             },
             tokens: tokens
         };
-
-        sentCache.set(event.id, pubkeyTag[1])
 
         admin.messaging().sendEachForMulticast(message)
     }
@@ -168,7 +167,7 @@ var isInSubRestartFunction = false
 async function restartRelaySubs() {
     if (isInSubRestartFunction) return 
     isInSubRestartFunction = true
-    
+
     let keys = await getAllKeys()
 
     relayPool.subscribe("subid", 
