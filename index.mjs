@@ -173,7 +173,7 @@ async function restartRelaySubs() {
 
     relayPool.subscribe("subid", 
         {
-            kinds: [4, 9735],
+            kinds: [4, 9735, 1059],
             since: Math.floor(Date.now() / 1000)
         }
     );
