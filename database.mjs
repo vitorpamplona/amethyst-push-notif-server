@@ -50,6 +50,7 @@ export async function getAllRelays() {
             && !row.relay.includes("//umbrel:")
             && !row.relay.includes("wss://wss:")
             && !row.relay.includes("weixin")
+            && !row.relay.includes("brb.io") // too many bugs
         ) {
             if (row.votes > 2) {
                 relays.push(row.relay)
