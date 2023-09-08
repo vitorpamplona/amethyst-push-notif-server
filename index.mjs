@@ -117,7 +117,7 @@ async function notify(event, relay) {
                 if (response.failureCount > 0) {
                   response.responses.forEach((resp, idx) => {
                     if (!resp.success) {
-                        console.log('Failed: ', resp.error.code, resp.error.message);
+                        console.log('Failed: ', resp.error.code, resp.error.message, JSON.stringify(message).length, "chars");
                     }
                   });
                 } 
