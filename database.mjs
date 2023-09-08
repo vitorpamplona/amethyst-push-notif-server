@@ -81,7 +81,7 @@ export async function registerInDatabase(pubkey, relay, token) {
 
 export async function deleteToken(token) {
     pgPool.query(
-        `DELETE from subscriptions (PUB_KEY, RELAY, TOKEN) 
+        `DELETE from subscriptions 
          WHERE TOKEN = $1
         `,
         [token],
