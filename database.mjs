@@ -2,7 +2,7 @@ import { pgPool } from './database-config.mjs'
 
 export async function getTokensByPubKey(pubkey) {
     const result = await pgPool.query(
-        `SELECT TOKEN AS token
+        `SELECT DISTINCT TOKEN AS token
          FROM subscriptions
          WHERE PUB_KEY = $1`,
         [pubkey]
