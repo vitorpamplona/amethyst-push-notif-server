@@ -15,7 +15,7 @@
     "firebase-admin": "^11.8.0",
     "lru-cache": "^9.1.1",
     "nostr": "^0.2.8",
-    "nostr-tools": "^1.10.1",
+    "nostr-tools": "^1.14.2",
     "pg": "^8.10.0"
   }
 }
