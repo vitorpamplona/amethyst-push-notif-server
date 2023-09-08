@@ -107,7 +107,7 @@ async function notify(event, relay) {
         if (tokens.length > 0) {
             const message = {
                 data: {
-                    event: JSON.stringify(event),
+                    //event: JSON.stringify(event),
                     encryptedEvent: JSON.stringify(createWrap(pubkeyTag[1], event))
                 },
                 tokens: tokens
