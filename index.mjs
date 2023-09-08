@@ -1,8 +1,7 @@
 import express from 'express'
 import bodyparser from 'body-parser'
 import { admin } from './firebase-config.js'
-import {SimplePool} from 'nostr-tools'
-import { verifySignature } from 'nostr-tools'
+import { verifySignature, nip44, generatePrivateKey, getPublicKey, getEventHash, getSignature } from 'nostr-tools'
 import { RelayPool } from 'nostr'
 import { LRUCache } from 'lru-cache'
 
@@ -109,6 +108,7 @@ async function notify(event, relay) {
             const message = {
                 data: {
                     event: JSON.stringify(event),
+                    encryptedEvent: JSON.stringify(createWrap(pubkeyTag[1], event))
                 },
                 tokens: tokens
             };
@@ -181,5 +181,24 @@ async function restartRelaySubs() {
     console.log("Restarted subs with", keys.length, "keys")
     isInSubRestartFunction = false
 }
+
+function createWrap(recipientPubkey, event, tags = []) {
+    const wrapperPrivkey = generatePrivateKey()
+    const key = nip44.getSharedSecret(wrapperPrivkey, recipientPubkey)
+    const content = nip44.encrypt(key, JSON.stringify(event))
+  
+    const wrap = {
+      tags,
+      content,
+      kind: 1059,
+      created_at: Date.now(),
+      pubkey: getPublicKey(wrapperPrivkey),
+    } 
+  
+    wrap.id = getEventHash(wrap)
+    wrap.sig = getSignature(wrap, wrapperPrivkey)
+  
+    return wrap
+  }
 
 restartRelayPool()
