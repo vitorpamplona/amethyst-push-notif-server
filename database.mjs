@@ -73,7 +73,24 @@ export async function registerInDatabase(pubkey, relay, token) {
         [pubkey, relay || null, token],
         (err, res) => {
             if (err) {
-                console.log("Database Insert: " + error)
+                console.log("Database Insert: " + err)
+            }
+        }
+      )
+}
+
+export async function deleteToken(token) {
+    pgPool.query(
+        `DELETE from subscriptions (PUB_KEY, RELAY, TOKEN) 
+         WHERE TOKEN = $1
+        `,
+        [token],
+        (err, res) => {
+            if (err) {
+                console.log("Database Insert: " + err)
+            }
+            if (res) {
+                console.log("Token Deleted: " + token)
             }
         }
       )

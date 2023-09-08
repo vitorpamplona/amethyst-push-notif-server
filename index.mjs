@@ -10,6 +10,7 @@ import {
     getAllKeys, 
     getAllRelays, 
     getTokensByPubKey, 
+    deleteToken,
     checkIfPubKeyExists, 
     checkIfRelayExists 
 } from './database.mjs'
@@ -118,6 +119,10 @@ async function notify(event, relay) {
                   response.responses.forEach((resp, idx) => {
                     if (!resp.success) {
                         console.log('Failed: ', resp.error.code, resp.error.message, JSON.stringify(message).length, "chars");
+                        if (resp.error.code === "messaging/registration-token-not-registered") {
+                            console.log('Deleting Token ', tokens[idx]);
+                            deleteToken(tokens[idx])
+                        }
                     }
                   });
                 } 
