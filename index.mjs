@@ -113,7 +113,15 @@ async function notify(event, relay) {
                 tokens: tokens
             };
     
-            admin.messaging().sendEachForMulticast(message)
+            admin.messaging().sendEachForMulticast(message).then((response) => {
+                if (response.failureCount > 0) {
+                  response.responses.forEach((resp, idx) => {
+                    if (!resp.success) {
+                        console.log('Failed: ' + resp);
+                    }
+                  });
+                } 
+              });
         }
     }
 }
