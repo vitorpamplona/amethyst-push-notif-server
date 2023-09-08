@@ -2,9 +2,12 @@ import { pgPool } from './database-config.mjs'
 
 export async function getTokensByPubKey(pubkey) {
     const result = await pgPool.query(
-        `SELECT DISTINCT TOKEN AS token
+        `SELECT DISTINCT TOKEN AS token, MAX(ID) as max_id
          FROM subscriptions
-         WHERE PUB_KEY = $1`,
+         WHERE PUB_KEY = $1
+         GROUP BY TOKEN
+         ORDER BY max_id DESC
+         LIMIT 5`,
         [pubkey]
     );
 
