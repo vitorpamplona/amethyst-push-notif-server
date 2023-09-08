@@ -112,6 +112,8 @@ async function notify(event, relay) {
                 },
                 tokens: tokens
             };
+
+            console.log(message)
     
             admin.messaging().sendEachForMulticast(message)
         }
