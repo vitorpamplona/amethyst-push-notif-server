@@ -4,7 +4,7 @@ import { admin } from './firebase-config.js'
 import { verifySignature, nip44, generatePrivateKey, getPublicKey, getEventHash, getSignature } from 'nostr-tools'
 import { RelayPool } from 'nostr'
 import { LRUCache } from 'lru-cache'
-import ntfyPublish from '@cityssm/ntfy-publish'
+import ntfyPublish, { DEFAULT_PRIORITY } from '@cityssm/ntfy-publish'
 
 import { 
     registerInDatabase, 
@@ -106,6 +106,7 @@ async function notify(event, relay) {
         console.log("New kind", event.kind, "event for", pubkeyTag[1])
         let tokens = await getTokensByPubKey(pubkeyTag[1])
         let tokensAsUrls = tokens.filter(isValidUrl)
+        let firebaseTokens = tokens.filter(function (url){ !isValidUrl(url) })
 
         if (tokens.length > 0) {
 
@@ -125,13 +126,14 @@ async function notify(event, relay) {
                 });
 
             }
-            
-            const message = {
+
+            if (firebaseTokens.length > 0) {
+                const message = {
                 data: {
                     //event: JSON.stringify(event),
                     encryptedEvent: JSON.stringify(createWrap(pubkeyTag[1], event))
                 },
-                tokens: tokens.filter(function (url){ !isValidUrl(url) })
+                tokens: firebaseTokens
             };
     
             admin.messaging().sendEachForMulticast(message).then((response) => {
@@ -146,7 +148,9 @@ async function notify(event, relay) {
                     }
                   });
                 } 
-              });
+              });    
+            }
+            
         }
     }
 }
