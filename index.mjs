@@ -110,6 +110,8 @@ async function notify(event, relay) {
         let firebaseTokens = tokens.filter(function (url){ !isValidUrl(url) })
 
         if (tokens.length > 0) {
+            console.log("Registered New kind", event.kind, "event for", pubkeyTag[1], "NTFY Tokens", tokensAsUrls, "Firebase Tokens", firebaseTokens)
+
             const stringifiedWrappedEventToPush = JSON.stringify(createWrap(pubkeyTag[1], event))
 
             if (tokensAsUrls.length > 0) {                
