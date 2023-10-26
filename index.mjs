@@ -103,16 +103,14 @@ async function register(token, events) {
 async function notify(event, relay) {
     let pubkeyTag = event.tags.find(tag => tag[0] == "p" && tag.length > 1)
     if (pubkeyTag && pubkeyTag[1]) {
-        console.log("New kind", event.kind, "event for", pubkeyTag[1])
         let tokens = await getTokensByPubKey(pubkeyTag[1])
         let tokensAsUrls = tokens.filter(isValidUrl)
         let firebaseTokens = tokens.filter(function (url){ !isValidUrl(url) })
 
         if (tokens.length > 0) {
+            const stringifiedWrappedEventToPush = JSON.stringify(createWrap(pubkeyTag[1], event))
 
-            if (tokensAsUrls.length > 0) {
-                const pushMessage = JSON.stringify(createWrap(pubkeyTag[1], event))
-                
+            if (tokensAsUrls.length > 0) {                
                 tokensAsUrls.forEach(async function (tokenUrl) {
                     const urlWithTopic = new URL(tokenUrl)
                     const currentServer = urlWithTopic.origin
@@ -121,36 +119,38 @@ async function notify(event, relay) {
                     await ntfyPublish({
                         server: currentServer,
                         topic: currentTopic,
-                        message: pushMessage
+                        message: stringifiedWrappedEventToPush
                     })
                 });
-
+                console.log("NTFY New kind", event.kind, "event for", pubkeyTag[1], "with", stringifiedWrappedEventToPush.length, "bytes")
             }
 
             if (firebaseTokens.length > 0) {
                 const message = {
-                data: {
-                    //event: JSON.stringify(event),
-                    encryptedEvent: JSON.stringify(createWrap(pubkeyTag[1], event))
-                },
-                tokens: firebaseTokens
-            };
+                    data: {
+                        encryptedEvent: stringifiedWrappedEventToPush
+                    },
+                    tokens: firebaseTokens
+                };
     
-            admin.messaging().sendEachForMulticast(message).then((response) => {
-                if (response.failureCount > 0) {
-                  response.responses.forEach((resp, idx) => {
-                    if (!resp.success) {
-                        console.log('Failed: ', resp.error.code, resp.error.message, JSON.stringify(message).length, "chars");
-                        if (resp.error.code === "messaging/registration-token-not-registered") {
-                            console.log('Deleting Token ', tokens[idx]);
-                            deleteToken(tokens[idx])
-                        }
-                    }
-                  });
-                } 
-              });    
-            }
-            
+                admin.messaging().sendEachForMulticast(message).then((response) => {
+                    if (response.failureCount > 0) {
+                        response.responses.forEach((resp, idx) => {
+                            if (!resp.success) {
+                                console.log('Failed: ', resp.error.code, resp.error.message, JSON.stringify(message).length, "chars");
+                                if (resp.error.code === "messaging/registration-token-not-registered") {
+                                    console.log('Deleting Token ', tokens[idx]);
+                                    deleteToken(tokens[idx])
+                                }
+                            }
+                        });
+                    } 
+                });   
+                
+                console.log("Firebase New kind", event.kind, "event for", pubkeyTag[1], "with", stringifiedWrappedEventToPush.length, "bytes")
+            }            
+        } else {
+            console.log("Unregistered New kind", event.kind, "event for", pubkeyTag[1])
         }
     }
 }
@@ -161,8 +161,8 @@ function isValidUrl(string) {
     try {
         givenURL = new URL(string);
     } catch (error) {
-        console.log("error is",error)
-      return false;  
+      //console.log("error is",error)
+        return false;  
     }
     return givenURL.protocol === "http:" || givenURL.protocol === "https:";
   }
