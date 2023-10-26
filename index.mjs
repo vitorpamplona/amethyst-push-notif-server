@@ -110,8 +110,6 @@ async function notify(event, relay) {
         let firebaseTokens = tokens.filter(item => !tokensAsUrls.includes(item))
 
         if (tokens.length > 0) {
-            console.log("Registered New kind", event.kind, "event for", pubkeyTag[1], "NTFY Tokens", tokensAsUrls, "Firebase Tokens", firebaseTokens)
-
             const stringifiedWrappedEventToPush = JSON.stringify(createWrap(pubkeyTag[1], event))
 
             if (tokensAsUrls.length > 0) {                
@@ -153,9 +151,7 @@ async function notify(event, relay) {
                 
                 console.log("Firebase New kind", event.kind, "event for", pubkeyTag[1], "with", stringifiedWrappedEventToPush.length, "bytes")
             }            
-        } else {
-            console.log("Unregistered New kind", event.kind, "event for", pubkeyTag[1])
-        }
+        } 
     }
 }
 
