@@ -4,6 +4,7 @@ import { admin } from './firebase-config.js'
 import { verifySignature, nip44, generatePrivateKey, getPublicKey, getEventHash, getSignature } from 'nostr-tools'
 import { RelayPool } from 'nostr'
 import { LRUCache } from 'lru-cache'
+import ntfyPublish, { DEFAULT_PRIORITY } from '@cityssm/ntfy-publish'
 
 import { 
     registerInDatabase, 
@@ -104,14 +105,35 @@ async function notify(event, relay) {
     if (pubkeyTag && pubkeyTag[1]) {
         console.log("New kind", event.kind, "event for", pubkeyTag[1])
         let tokens = await getTokensByPubKey(pubkeyTag[1])
+        let tokensAsUrls = tokens.filter(isValidUrl)
+        let firebaseTokens = tokens.filter(function (url){ !isValidUrl(url) })
 
         if (tokens.length > 0) {
-            const message = {
+
+            if (tokensAsUrls.length > 0) {
+                const pushMessage = JSON.stringify(createWrap(pubkeyTag[1], event))
+                
+                tokensAsUrls.forEach(async function (tokenUrl) {
+                    const urlWithTopic = new URL(tokenUrl)
+                    const currentServer = urlWithTopic.origin
+                    const currentTopic = urlWithTopic.pathname.substring(1)
+
+                    await ntfyPublish({
+                        server: currentServer,
+                        topic: currentTopic,
+                        message: pushMessage
+                    })
+                });
+
+            }
+
+            if (firebaseTokens.length > 0) {
+                const message = {
                 data: {
                     //event: JSON.stringify(event),
                     encryptedEvent: JSON.stringify(createWrap(pubkeyTag[1], event))
                 },
-                tokens: tokens
+                tokens: firebaseTokens
             };
     
             admin.messaging().sendEachForMulticast(message).then((response) => {
@@ -126,10 +148,24 @@ async function notify(event, relay) {
                     }
                   });
                 } 
-              });
+              });    
+            }
+            
         }
     }
 }
+
+function isValidUrl(string) {
+    let givenURL;
+
+    try {
+        givenURL = new URL(string);
+    } catch (error) {
+        console.log("error is",error)
+      return false;  
+    }
+    return givenURL.protocol === "http:" || givenURL.protocol === "https:";
+  }
 
 var isInRelayPollFunction = false
 
