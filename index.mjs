@@ -107,7 +107,7 @@ async function notify(event, relay) {
 
         let tokens = await getTokensByPubKey(pubkeyTag[1])
         let tokensAsUrls = tokens.filter(isValidUrl)
-        let firebaseTokens = tokens.filter(function (url){ !isValidUrl(url) })
+        let firebaseTokens = tokens.filter(item => !tokensAsUrls.includes(item))
 
         if (tokens.length > 0) {
             console.log("Registered New kind", event.kind, "event for", pubkeyTag[1], "NTFY Tokens", tokensAsUrls, "Firebase Tokens", firebaseTokens)
