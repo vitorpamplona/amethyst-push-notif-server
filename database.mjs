@@ -6,8 +6,7 @@ export async function getTokensByPubKey(pubkey) {
          FROM subscriptions
          WHERE PUB_KEY = $1
          GROUP BY TOKEN
-         ORDER BY max_id DESC
-         LIMIT 5`,
+         ORDER BY max_id DESC`,
         [pubkey]
     );
 
