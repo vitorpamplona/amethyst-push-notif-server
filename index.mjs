@@ -118,11 +118,15 @@ async function notify(event, relay) {
                     const currentServer = urlWithTopic.origin
                     const currentTopic = urlWithTopic.pathname.substring(1)
 
-                    await ntfyPublish({
-                        server: currentServer,
-                        topic: currentTopic,
-                        message: stringifiedWrappedEventToPush
-                    })
+                    try {
+                        await ntfyPublish({
+                            server: currentServer,
+                            topic: currentTopic,
+                            message: stringifiedWrappedEventToPush
+                        })
+                    } catch(e) {
+                        deleteToken(tokenUrl)
+                    }
                 });
                 console.log("NTFY New kind", event.kind, "event for", pubkeyTag[1], "with", stringifiedWrappedEventToPush.length, "bytes")
             }
