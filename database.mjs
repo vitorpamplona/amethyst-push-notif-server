@@ -86,10 +86,27 @@ export async function deleteToken(token) {
         [token],
         (err, res) => {
             if (err) {
-                console.log("Database Insert: " + err)
+                console.log("Delete Token Error: " + err)
             }
             if (res) {
                 console.log("Token Deleted: " + token)
+            }
+        }
+      )
+}
+
+export async function deleteRelay(relayUrl) {
+    pgPool.query(
+        `DELETE from subscriptions 
+         WHERE RELAY = $1
+        `,
+        [relayUrl],
+        (err, res) => {
+            if (err) {
+                console.log("Delete Relay Error: " + err)
+            }
+            if (res) {
+                console.log("Relay Deleted: " + relayUrl)
             }
         }
       )

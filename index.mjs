@@ -12,6 +12,7 @@ import {
     getAllRelays, 
     getTokensByPubKey, 
     deleteToken,
+    deleteRelay,
     checkIfPubKeyExists, 
     checkIfRelayExists 
 } from './database.mjs'
@@ -209,6 +210,9 @@ async function restartRelayPool() {
     });
 
     relayPool.on('error', (relay, e) => {
+        if (e.message === "close during reconnect") {
+            deleteRelay(relay.url)
+        }
 		console.log("Error", relay.url, e.message)
 	})
 
