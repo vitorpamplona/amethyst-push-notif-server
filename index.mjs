@@ -104,7 +104,7 @@ async function register(token, events) {
 async function notify(event, relay) {
     let pubkeyTag = event.tags.find(tag => tag[0] == "p" && tag.length > 1)
     if (pubkeyTag && pubkeyTag[1]) {
-        console.log("New kind", event.kind, "event for", pubkeyTag[1])
+        //console.log("New kind", event.kind, "event for", pubkeyTag[1])
 
         let tokens = await getTokensByPubKey(pubkeyTag[1])
         let tokensAsUrls = tokens.filter(isValidUrl)
