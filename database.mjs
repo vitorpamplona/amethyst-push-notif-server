@@ -98,7 +98,7 @@ export async function deleteToken(token) {
 export async function deleteRelay(relayUrl) {
     pgPool.query(
         `DELETE from subscriptions 
-         WHERE RELAY = $1
+         WHERE rtrim(RELAY,'/') = $1
         `,
         [relayUrl],
         (err, res) => {
