@@ -50,6 +50,16 @@ app.listen(port, () => {
     console.log("Listening to port" + port)
 })
 
+function isSupportedUrl(url) {
+    return !url.includes("brb.io")
+    && !url.includes("127.0")
+    && !url.includes("umbrel.local")
+    && !url.includes("192.168.")
+    && !url.includes(".onion")
+    && !url.includes("https://")
+    && !url.includes("http://")
+}
+
 // -- registering tokens with pubkeys. 
 
 async function register(token, events) {
@@ -74,15 +84,7 @@ async function register(token, events) {
                 newPubKeys = true
             }
 
-            if (
-                !relayTag[1].includes("brb.io")
-                && !relayTag[1].includes("127.0")
-                && !relayTag[1].includes("umbrel.local")
-                && !relayTag[1].includes("192.168.")
-                && !relayTag[1].includes(".onion")
-                && !relayTag[1].includes("https://")
-                && !relayTag[1].includes("http://")
-            ) {
+            if (isSupportedUrl(relayTag[1])) {
                 let relayExist = await checkIfRelayExists(relayTag[1])
 
                 if (!relayExist) {
@@ -91,7 +93,6 @@ async function register(token, events) {
 
                 await registerInDatabase(event.pubkey,relayTag[1],tokenTag[1])
             }
-            
         }    
 
         processed.push(
@@ -222,21 +223,15 @@ async function restartRelayPool() {
     });
 
     relayPool.on('error', (relay, e) => {
-        if (e.message.includes("Invalid URL")) {
+        if (
+            !isSupportedUrl(relayTag[1])
+            || e.message.includes("Invalid URL")
+            || e.message.includes("ECONNREFUSED")
+            || e.message.includes("Invalid WebSocket frame: FIN must be set")
+            || e.message.includes("The URL's protocol must be one of")
+        ) {
             deleteRelay(relay.url)
-        }
-        if (e.message.includes("ECONNREFUSED")) {
-            deleteRelay(relay.url)
-        }
-        if (e.message.includes("Invalid WebSocket frame: FIN must be set")) {
-            deleteRelay(relay.url)
-        }
-        if (e.message.includes("The URL's protocol must be one of")) {
-            deleteRelay(relay.url)
-        }
-        if (relay.url.includes("//umbrel.local")) {
-            deleteRelay(relay.url)
-        }
+        } 
 
 		console.log("Error", relay.url, e.message)
 	})
@@ -267,7 +262,7 @@ async function restartRelaySubs() {
 function createWrap(recipientPubkey, event, tags = []) {
     const wrapperPrivkey = generateSecretKey()
     const key = nip44.getConversationKey(wrapperPrivkey, recipientPubkey)
-    const content = nip44.encrypt(key, JSON.stringify(event))
+    const content = nip44.encrypt(JSON.stringify(event), key)
   
     const wrap = {
       tags: tags,
