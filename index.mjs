@@ -262,14 +262,15 @@ async function restartRelaySubs() {
 
 function createWrap(recipientPubkey, event, tags = []) {
     const wrapperPrivkey = generateSecretKey()
-    const key = nip44.getConversationKey(wrapperPrivkey, recipientPubkey)
-    const content = nip44.encrypt(JSON.stringify(event), key)
   
     const wrapTemplate = {
-      tags: tags,
-      content: content,
       kind: 1059,
       created_at: Date.now(),
+      tags: tags,
+      content: nip44.encrypt(
+        JSON.stringify(event), 
+        nip44.getConversationKey(wrapperPrivkey, recipientPubkey)
+      )
     } 
 
     return finalizeEvent(wrapTemplate, wrapperPrivkey)
