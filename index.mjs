@@ -1,7 +1,8 @@
 import express from 'express'
 import bodyparser from 'body-parser'
 import { admin } from './firebase-config.js'
-import { verifySignature, nip44, generatePrivateKey, getPublicKey, getEventHash, getSignature } from 'nostr-tools'
+import { nip44 } from 'nostr-tools'
+import { finalizeEvent, verifyEvent } from 'nostr-tools/pure'
 import { RelayPool } from 'nostr'
 import { LRUCache } from 'lru-cache'
 import ntfyPublish, { DEFAULT_PRIORITY } from '@cityssm/ntfy-publish'
@@ -58,7 +59,7 @@ async function register(token, events) {
     let newRelays = false
 
     for (const event of events) {
-        let veryOk = verifySignature(event)
+        let veryOk = verifyEvent(event)
         
         let tokenTag = event.tags
             .find(tag => tag[0] == "challenge" && tag.length > 1)
@@ -155,8 +156,8 @@ async function notify(event, relay) {
                 });   
                 
                 console.log("Firebase New kind", event.kind, "event for", pubkeyTag[1], "with", stringifiedWrappedEventToPush.length, "bytes")
-            }            
-        } 
+            }
+        }
     }
 }
 
@@ -240,7 +241,7 @@ async function restartRelaySubs() {
 }
 
 function createWrap(recipientPubkey, event, tags = []) {
-    const wrapperPrivkey = generatePrivateKey()
+    const wrapperPrivkey = generateSecretKey()
     const key = nip44.getSharedSecret(wrapperPrivkey, recipientPubkey)
     const content = nip44.encrypt(key, JSON.stringify(event))
   
@@ -249,13 +250,9 @@ function createWrap(recipientPubkey, event, tags = []) {
       content,
       kind: 1059,
       created_at: Date.now(),
-      pubkey: getPublicKey(wrapperPrivkey),
     } 
   
-    wrap.id = getEventHash(wrap)
-    wrap.sig = getSignature(wrap, wrapperPrivkey)
-  
-    return wrap
+    return finalizeEvent(wrap, wrapperPrivkey)
   }
 
 restartRelayPool()
