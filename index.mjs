@@ -3,7 +3,7 @@ import bodyparser from 'body-parser'
 import { admin } from './firebase-config.js'
 import { nip44 } from 'nostr-tools'
 import { finalizeEvent, generateSecretKey, verifyEvent } from 'nostr-tools/pure'
-import { RelayPool } from 'nostr'
+import { RelayPool } from './relay-pool.js'
 import { LRUCache } from 'lru-cache'
 import ntfyPublish, { DEFAULT_PRIORITY } from '@cityssm/ntfy-publish'
 
@@ -233,6 +233,8 @@ var isInSubRestartFunction = false
 async function restartRelaySubs() {
     if (isInSubRestartFunction) return 
     isInSubRestartFunction = true
+
+    console.log("Restarting Relay Subs", relayPool)
 
     let keys = await getAllKeys()
 
