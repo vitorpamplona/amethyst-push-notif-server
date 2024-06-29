@@ -79,6 +79,9 @@ async function register(token, events) {
                 && !relayTag[1].includes("127.0")
                 && !relayTag[1].includes("umbrel.local")
                 && !relayTag[1].includes("192.168.")
+                && !relayTag[1].includes(".onion")
+                && !relayTag[1].includes("https://")
+                && !relayTag[1].includes("http://")
             ) {
                 let relayExist = await checkIfRelayExists(relayTag[1])
 
