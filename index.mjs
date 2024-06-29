@@ -51,13 +51,14 @@ app.listen(port, () => {
 })
 
 function isSupportedUrl(url) {
-    return !url.includes("brb.io")
-    && !url.includes("127.0")
-    && !url.includes("umbrel.local")
-    && !url.includes("192.168.")
-    && !url.includes(".onion")
-    && !url.includes("https://")
-    && !url.includes("http://")
+    return !url.includes("brb.io") // no broken relays
+    && !url.includes("127.0") // no local relays
+    && !url.includes("umbrel.local") // no local relays
+    && !url.includes("192.168.") // no local relays
+    && !url.includes(".onion") // we are not running on Tor
+    && !url.includes("https://") // not a websocket
+    && !url.includes("http://") // not a websocket
+    && !url.includes("npub1") // does not allow custom uris
 }
 
 // -- registering tokens with pubkeys. 
