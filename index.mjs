@@ -211,13 +211,13 @@ async function restartRelayPool() {
     });
 
     relayPool.on('error', (relay, e) => {
-        if (e.message === "close during reconnect") {
-            deleteRelay(relay.url)
-        }
         if (e.message.includes("Invalid URL")) {
             deleteRelay(relay.url)
         }
         if (e.message.includes("ECONNREFUSED")) {
+            deleteRelay(relay.url)
+        }
+        if (e.message.includes("brb.io") || e.message.includes("wexin")) {
             deleteRelay(relay.url)
         }
 

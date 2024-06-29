@@ -47,14 +47,7 @@ export async function getAllRelays() {
 
     let relays = []
     for (let row of result.rows) {
-        if (
-            !row.relay.includes("weixin")
-            && !row.relay.includes("brb.io") // too many bugs
-        ) {
-            if (row.votes > 0) {
-                relays.push(row.relay)
-            }
-        }
+        relays.push(row.relay)
     }
     return relays
 }
