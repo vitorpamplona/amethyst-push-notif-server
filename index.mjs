@@ -265,7 +265,7 @@ function createWrap(recipientPubkey, event, tags = []) {
   
     const wrapTemplate = {
       kind: 1059,
-      created_at: Date.now(),
+      created_at: Date.now() / 1000,
       tags: tags,
       content: nip44.encrypt(
         JSON.stringify(event), 
