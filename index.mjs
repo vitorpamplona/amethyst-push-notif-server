@@ -224,7 +224,7 @@ async function restartRelayPool() {
 
     relayPool.on('error', (relay, e) => {
         if (
-            !isSupportedUrl(relayTag[1])
+            !isSupportedUrl(relay.url)
             || e.message.includes("Invalid URL")
             || e.message.includes("ECONNREFUSED")
             || e.message.includes("Invalid WebSocket frame: FIN must be set")
