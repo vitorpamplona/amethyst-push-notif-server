@@ -217,7 +217,7 @@ async function restartRelayPool() {
         if (e.message.includes("ECONNREFUSED")) {
             deleteRelay(relay.url)
         }
-        if (e.message.includes("brb.io") || e.message.includes("wexin")) {
+        if (e.message.includes("Invalid WebSocket frame: FIN must be set")) {
             deleteRelay(relay.url)
         }
 
