@@ -220,6 +220,12 @@ async function restartRelayPool() {
         if (e.message.includes("Invalid WebSocket frame: FIN must be set")) {
             deleteRelay(relay.url)
         }
+        if (e.message.includes("The URL's protocol must be one of")) {
+            deleteRelay(relay.url)
+        }
+        if (relay.url.includes("//umbrel.local")) {
+            deleteRelay(relay.url)
+        }
 
 		console.log("Error", relay.url, e.message)
 	})
