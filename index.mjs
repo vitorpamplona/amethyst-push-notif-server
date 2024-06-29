@@ -74,13 +74,21 @@ async function register(token, events) {
                 newPubKeys = true
             }
 
-            let relayExist = await checkIfRelayExists(relayTag[1])
-            
-            if (!relayExist) {
-                newRelays = true
-            }
+            if (
+                !relayTag[1].includes("brb.io")
+                && !relayTag[1].includes("127.0")
+                && !relayTag[1].includes("umbrel.local")
+                && !relayTag[1].includes("192.168.")
+            ) {
+                let relayExist = await checkIfRelayExists(relayTag[1])
 
-            await registerInDatabase(event.pubkey,relayTag[1],tokenTag[1])
+                if (!relayExist) {
+                    newRelays = true
+                }
+
+                await registerInDatabase(event.pubkey,relayTag[1],tokenTag[1])
+            }
+            
         }    
 
         processed.push(
