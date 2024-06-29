@@ -270,13 +270,19 @@ function createWrap(recipientPubkey, event, tags = []) {
     const content = nip44.encrypt(key, JSON.stringify(event))
   
     const wrap = {
-      tags,
-      content,
+      tags: tags,
+      content: content,
       kind: 1059,
       created_at: Date.now(),
     } 
+
+    console.log(wrap)
   
-    return finalizeEvent(wrap, wrapperPrivkey)
+    const final = finalizeEvent(wrap, wrapperPrivkey)
+
+    console.log(final)
+
+    return final
   }
 
 restartRelayPool()
