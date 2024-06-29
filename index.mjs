@@ -279,6 +279,3 @@ function createWrap(recipientPubkey, event, tags = []) {
   }
 
 restartRelayPool()
-
-
-createWrap("Test", [])
