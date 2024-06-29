@@ -273,7 +273,12 @@ function createWrap(recipientPubkey, event, tags = []) {
       )
     } 
 
-    return finalizeEvent(wrapTemplate, wrapperPrivkey)
+    const test = finalizeEvent(wrapTemplate, wrapperPrivkey)
+    console.log(test)
+    return test
   }
 
 restartRelayPool()
+
+
+createWrap("Test", [])
