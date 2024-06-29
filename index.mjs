@@ -240,8 +240,6 @@ async function restartRelaySubs() {
     if (isInSubRestartFunction) return 
     isInSubRestartFunction = true
 
-    console.log("Restarting Relay Subs", relayPool)
-
     let keys = await getAllKeys()
 
     relayPool.subscribe("subid", 
