@@ -3,7 +3,7 @@ const WS = typeof WebSocket !== 'undefined' ? WebSocket : require('ws')
 Relay.prototype.wait_connected = async function relay_wait_connected(data) {
 	let retry = 10000
 	while (true) {
-		if (this.ws && this.ws.readyState !== 1) {
+		if (!this.manualClose && this.ws && this.ws.readyState !== 1) {
 			await sleep(retry)
 			retry *= 1.5
 		}
@@ -119,7 +119,7 @@ Relay.prototype.unsubscribe = function relay_unsubscribe(sub_id) {
 
 Relay.prototype.send = async function relay_send(data) {
 	await this.wait_connected()
-	if (this.ws) {
+	if (!this.manualClose && this.ws && this.ws.readyState == 1) {
 		this.ws.send(JSON.stringify(data))
 	} else {
 		console.log("WS not found while sending to ", this.url)
