@@ -50,8 +50,17 @@ app.listen(port, () => {
     console.log("Listening to port" + port)
 })
 
+function isValidUrl(urlString) {
+    try { 
+        return Boolean(new URL(urlString)); 
+    }
+    catch(e){ 
+        return false; 
+    }
+}
+
 function isSupportedUrl(url) {
-    return !url.includes("brb.io") // no broken relays
+    return url && !url.includes("brb.io") // no broken relays
     && !url.includes("127.0") // no local relays
     && !url.includes("umbrel.local") // no local relays
     && !url.includes("192.168.") // no local relays
@@ -59,6 +68,7 @@ function isSupportedUrl(url) {
     && !url.includes("https://") // not a websocket
     && !url.includes("http://") // not a websocket
     && !url.includes("npub1") // does not allow custom uris
+    && isValidUrl(url)
 }
 
 // -- registering tokens with pubkeys. 
@@ -78,28 +88,28 @@ async function register(token, events) {
         let relayTag = event.tags
             .find(tag => tag[0] == "relay" && tag.length > 1)
 
-        if (tokenTag && veryOk) {
+        if (relayTag[1] && isSupportedUrl(relayTag[1]) && tokenTag[1] && veryOk) {
             let keyExist = await checkIfPubKeyExists(event.pubkey)
 
             if (!keyExist) {
                 newPubKeys = true
             }
 
-            if (isSupportedUrl(relayTag[1])) {
-                let relayExist = await checkIfRelayExists(relayTag[1])
+            let relayExist = await checkIfRelayExists(relayTag[1])
 
-                if (!relayExist) {
-                    newRelays = true
-                }
-
-                await registerInDatabase(event.pubkey,relayTag[1],tokenTag[1])
+            if (!relayExist) {
+                newRelays = true
             }
-        }    
+
+            await registerInDatabase(event.pubkey,relayTag[1],tokenTag[1])
+        } else {
+            console.log("Invalid registration", veryOk, veryUrl, tokenTag, relayTag)
+        }
 
         processed.push(
             {
                 "pubkey": event.pubkey,
-                "added": veryOk
+                "added": veryUrl && tokenTag && veryOk
             }
         )
     }
@@ -121,7 +131,7 @@ async function notify(event, relay) {
         //console.log("New kind", event.kind, "event for", pubkeyTag[1])
 
         let tokens = await getTokensByPubKey(pubkeyTag[1])
-        let tokensAsUrls = tokens.filter(isValidUrl)
+        let tokensAsUrls = tokens.filter(isValidHttpUrl)
         let firebaseTokens = tokens.filter(item => !tokensAsUrls.includes(item))
 
         if (tokens.length > 0) {
@@ -174,7 +184,7 @@ async function notify(event, relay) {
     }
 }
 
-function isValidUrl(string) {
+function isValidHttpUrl(string) {
     let givenURL;
 
     try {
