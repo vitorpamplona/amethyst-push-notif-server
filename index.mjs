@@ -88,7 +88,9 @@ async function register(token, events) {
         let relayTag = event.tags
             .find(tag => tag[0] == "relay" && tag.length > 1)
 
-        if (relayTag[1] && isSupportedUrl(relayTag[1]) && tokenTag[1] && veryOk) {
+        let veryUrl = relayTag[1] && isSupportedUrl(relayTag[1])
+
+        if (veryUrl && tokenTag[1] && veryOk) {
             let keyExist = await checkIfPubKeyExists(event.pubkey)
 
             if (!keyExist) {
