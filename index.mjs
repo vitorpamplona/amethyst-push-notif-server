@@ -97,7 +97,6 @@ async function register(token, events) {
             }
 
             for (const relayTag of relayTags) {
-                console.log("Checking ", relayTag)
                 if (!await checkIfRelayExists(relayTag)) {
                     newRelays = true
                 }
