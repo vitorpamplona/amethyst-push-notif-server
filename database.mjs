@@ -52,20 +52,22 @@ export async function getAllRelays() {
     return relays
 }
 
-export async function registerInDatabase(pubkey, relay, token) {
-    pgPool.query(
-        `INSERT INTO subscriptions (PUB_KEY, RELAY, TOKEN) 
-         VALUES ($1, $2, $3) 
-         ON CONFLICT (PUB_KEY, RELAY, TOKEN) 
-         DO NOTHING;
-        `,
-        [pubkey, relay || null, token],
-        (err, res) => {
-            if (err) {
-                console.log("Database Insert: " + err)
+export async function registerInDatabase(pubkey, relays, token) {
+    for (let relay of relays) {
+        pgPool.query(
+            `INSERT INTO subscriptions (PUB_KEY, RELAY, TOKEN) 
+            VALUES ($1, $2, $3) 
+            ON CONFLICT (PUB_KEY, RELAY, TOKEN) 
+            DO NOTHING;
+            `,
+            [pubkey, relay || null, token],
+            (err, res) => {
+                if (err) {
+                    console.log("Database Insert: " + err)
+                }
             }
-        }
-      )
+        )
+    }
 }
 
 export async function deleteToken(token) {

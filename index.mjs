@@ -79,43 +79,39 @@ async function register(token, events) {
     let newPubKeys = false
     let newRelays = false
 
-    console.log("Registering", events.length, "events")
-
     for (const event of events) {
         let veryOk = verifyEvent(event)
         
         let tokenTag = event.tags
             .find(tag => tag[0] == "challenge" && tag.length > 1)
 
-        let relayTag = event.tags
-            .find(tag => tag[0] == "relay" && tag.length > 1)
+        let relayTags = event.tags
+            .filter(tag => tag[0] == "relay" && tag.length > 1 && isSupportedUrl(tag[1]))
+            .map(tag => tag[1])
 
-        let veryUrl = relayTag[1] && isSupportedUrl(relayTag[1])
-
-        if (veryUrl && tokenTag[1] && veryOk) {
+        if (tokenTag[1] && veryOk && relayTags.length > 0) {
             let keyExist = await checkIfPubKeyExists(event.pubkey)
 
             if (!keyExist) {
                 newPubKeys = true
             }
 
-            let relayExist = await checkIfRelayExists(relayTag[1])
-
-            if (!relayExist) {
-                newRelays = true
+            for (const relayTag of relayTags) {
+                console.log("Checking ", relayTag)
+                if (!await checkIfRelayExists(relayTag)) {
+                    newRelays = true
+                }
             }
 
-            console.log("Adding", event.pubkey, relayTag[1], tokenTag[1])
-
-            await registerInDatabase(event.pubkey,relayTag[1],tokenTag[1])
+            await registerInDatabase(event.pubkey,relayTags,tokenTag[1])
         } else {
-            console.log("Invalid registration", veryOk, veryUrl, tokenTag, relayTag)
+            console.log("Invalid registration", veryOk, tokenTag, relayTags)
         }
 
         processed.push(
             {
                 "pubkey": event.pubkey,
-                "added": veryUrl && tokenTag && veryOk
+                "added": tokenTag && veryOk && relayTags.length > 0
             }
         )
     }
