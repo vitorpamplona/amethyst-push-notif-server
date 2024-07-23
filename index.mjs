@@ -79,6 +79,8 @@ async function register(token, events) {
     let newPubKeys = false
     let newRelays = false
 
+    console.log("Registering", events.length, "events")
+
     for (const event of events) {
         let veryOk = verifyEvent(event)
         
@@ -102,6 +104,8 @@ async function register(token, events) {
             if (!relayExist) {
                 newRelays = true
             }
+
+            console.log("Adding", event.pubkey, relayTag[1], tokenTag[1])
 
             await registerInDatabase(event.pubkey,relayTag[1],tokenTag[1])
         } else {
