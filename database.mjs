@@ -36,9 +36,9 @@ export async function getAllKeys() {
 
 export async function getAllRelays() {
     const result = await pgPool.query(
-        `SELECT rtrim(RELAY,'/') AS relay, COUNT(*) AS votes
+        `SELECT RTRIM(TRIM(RELAY),'/') AS relay, COUNT(*) AS votes
         FROM subscriptions 
-        group by rtrim(RELAY,'/')
+        group by RTRIM(TRIM(RELAY),'/')
         order by votes desc
         `
     )
