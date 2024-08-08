@@ -1,7 +1,7 @@
 const WS = typeof WebSocket !== 'undefined' ? WebSocket : require('ws')
 
 Relay.prototype.wait_connected = async function relay_wait_connected(data) {
-	let retry = 10000
+	let retry = 100000
 	while (true) {
 		if (!this.manualClose && this.ws && this.ws.readyState !== 1) {
 			await sleep(retry)
@@ -132,7 +132,7 @@ function handle_nostr_message(relay, msg)
 	try {
 		data = JSON.parse(msg.data)
 	} catch (e) {
-		console.error("handle_nostr_message", e)
+		console.error("handle_nostr_message", relay.url, msg.data, e)
 		return
 	}
 	if (data.length >= 2) {
