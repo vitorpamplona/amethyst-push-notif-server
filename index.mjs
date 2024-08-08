@@ -60,15 +60,23 @@ function isValidUrl(urlString) {
 }
 
 function isSupportedUrl(url) {
-    return url && !url.includes("brb.io") // no broken relays
-    && !url.includes("127.0") // no local relays
-    && !url.includes("umbrel.local") // no local relays
-    && !url.includes("192.168.") // no local relays
-    && !url.includes(".onion") // we are not running on Tor
-    && !url.includes("https://") // not a websocket
-    && !url.includes("http://") // not a websocket
-    && !url.includes("npub1") // does not allow custom uris
-    && isValidUrl(url)
+    return url &&
+        !url.includes("brb.io") && // no broken relays
+        !url.includes("127.0") && // no local relays
+        !url.includes("umbrel.local") && // no local relays
+        !url.includes("192.168.") && // no local relays
+        !url.includes(".onion") && // we are not running on Tor
+        !url.includes("https://") && // not a websocket
+        !url.includes("http://") && // not a websocket
+        !url.includes("www://") && // not a websocket
+        !url.includes("https//") && // not a websocket
+        !url.includes("http//") && // not a websocket
+        !url.includes("www//") && // not a websocket
+        !url.includes("npub1") && // does not allow custom uris
+        !url.includes("wss:// ") && // space is not allowed
+        !url.includes("was://") &&  // common mispellings
+        !url.includes("ws://umbrel:") &&  // local domain
+        isValidUrl(url)
 }
 
 // -- registering tokens with pubkeys. 
