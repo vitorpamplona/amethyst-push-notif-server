@@ -73,9 +73,10 @@ function isSupportedUrl(url) {
         !url.includes("http//") && // not a websocket
         !url.includes("www//") && // not a websocket
         !url.includes("npub1") && // does not allow custom uris
-        !url.includes("wss:// ") && // space is not allowed
         !url.includes("was://") &&  // common mispellings
         !url.includes("ws://umbrel:") &&  // local domain
+        !url.includes("\t") &&  // tab is not allowed
+        !url.includes(" ") && // space is not allowed
         isValidUrl(url)
 }
 
