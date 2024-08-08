@@ -64,7 +64,7 @@ RelayPool.prototype.remove = function relayPoolRemove(url) {
 	for (const relay of this.relays) {
 		if (relay.url === url) {
 			relay.close()
-			this.replays.splice(i, 1)
+			this.relays.splice(i, 1)
 			return true
 		}
 
