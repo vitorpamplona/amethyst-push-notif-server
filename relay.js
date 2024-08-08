@@ -60,7 +60,7 @@ function init_websocket(me) {
 				me.onfn.error(e)
 			if (me.reconnecting)
 				return reject(new Error("error during reconnect"))
-			if (me.opts.reconnect)
+			if (!me.manualClose && me.opts.reconnect)
 				reconnect(me)
 		}
 		ws.onopen = (e) => {
@@ -100,8 +100,8 @@ Relay.prototype.on = function relayOn(method, fn) {
 }
 
 Relay.prototype.close = function relayClose() {
+	this.manualClose = true
 	if (this.ws) {
-		this.manualClose = true
 		this.ws.close()
 	}
 }
