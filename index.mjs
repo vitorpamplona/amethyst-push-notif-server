@@ -14,7 +14,7 @@ import {
     getTokensByPubKey, 
     deleteToken,
     deleteRelay,
-    checkIfPubKeyExists, 
+    //checkIfPubKeyExists, 
     checkIfRelayExists 
 } from './database.mjs'
 
@@ -85,7 +85,7 @@ function isSupportedUrl(url) {
 async function register(token, events) {
     let processed = []
 
-    let newPubKeys = false
+    //let newPubKeys = false
     let newRelays = false
 
     for (const event of events) {
@@ -99,11 +99,10 @@ async function register(token, events) {
             .map(tag => tag[1])
 
         if (tokenTag[1] && veryOk && relayTags.length > 0) {
-            let keyExist = await checkIfPubKeyExists(event.pubkey)
-
-            if (!keyExist) {
-                newPubKeys = true
-            }
+            //let keyExist = await checkIfPubKeyExists(event.pubkey)
+            //if (!keyExist) {
+            //    newPubKeys = true
+            //}
 
             for (const relayTag of relayTags) {
                 if (!await checkIfRelayExists(relayTag)) {
@@ -126,9 +125,9 @@ async function register(token, events) {
 
     if (newRelays)
         restartRelayPool()
-    else if (newPubKeys) {
-        restartRelaySubs()
-    } 
+    //else if (newPubKeys) {
+    //    restartRelaySubs()
+    //} 
 
     return processed
 }
@@ -262,6 +261,7 @@ async function restartRelayPool() {
     isInRelayPollFunction = false
 }
 
+/*
 var isInSubRestartFunction = false
 
 async function restartRelaySubs() {
@@ -280,6 +280,7 @@ async function restartRelaySubs() {
     console.log("Restarted subs with", keys.length, "keys")
     isInSubRestartFunction = false
 }
+*/
 
 function createWrap(recipientPubkey, event, tags = []) {
     const wrapperPrivkey = generateSecretKey()
