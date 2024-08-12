@@ -149,3 +149,21 @@ export async function checkIfRelayExists(relay) {
     if (!result || !result.rows || !result.rows.length) return [];
     return result.rows[0].instances && result.rows[0].instances > 0
 }
+
+export async function checkIfThereIsANewRelay(relayList) {
+    let mapped = relayList.map( url => [url])
+
+    const result = await pgPool.query(
+        format(
+            `VALUES %L
+            EXCEPT ALL 
+            SELECT RELAY from subscriptions
+            `,
+            mapped
+        ),
+        []
+    );
+
+    if (!result || !result.rows || !result.rows.length) return [];
+    return result.rows.length > 0
+}

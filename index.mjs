@@ -15,7 +15,7 @@ import {
     deleteToken,
     deleteRelay,
     //checkIfPubKeyExists, 
-    checkIfRelayExists 
+    checkIfThereIsANewRelay
 } from './database.mjs'
 
 const app = express()
@@ -104,11 +104,9 @@ async function register(token, events) {
             //    newPubKeys = true
             //}
 
-            for (const relayTag of relayTags) {
-                if (!await checkIfRelayExists(relayTag)) {
-                    newRelays = true
-                }
-            }
+            //for (const relayTag of relayTags) {
+            newRelays = await checkIfThereIsANewRelay(relayTags)
+            //}
 
             await registerInDatabaseTuples(relayTags.map(relayUrl => [event.pubkey,relayUrl || null,tokenTag[1]]))
         } else {
