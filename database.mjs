@@ -151,15 +151,13 @@ export async function checkIfRelayExists(relay) {
 }
 
 export async function checkIfThereIsANewRelay(relayList) {
-    let mapped = relayList.map( url => [url])
-
     const result = await pgPool.query(
         format(
             `VALUES %L
             EXCEPT ALL 
             SELECT RELAY from subscriptions
             `,
-            mapped
+            relayList.map( url => [url])
         ),
         []
     );
