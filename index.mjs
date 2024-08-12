@@ -8,7 +8,7 @@ import { LRUCache } from 'lru-cache'
 import ntfyPublish, { DEFAULT_PRIORITY } from '@cityssm/ntfy-publish'
 
 import { 
-    registerInDatabase, 
+    registerInDatabaseTuples, 
     getAllKeys, 
     getAllRelays, 
     getTokensByPubKey, 
@@ -110,7 +110,7 @@ async function register(token, events) {
                 }
             }
 
-            await registerInDatabase(event.pubkey,relayTags,tokenTag[1])
+            await registerInDatabaseTuples(relayTags.map(relayUrl => [event.pubkey,relayUrl || null,tokenTag[1]]))
         } else {
             console.log("Invalid registration", veryOk, tokenTag, relayTags)
         }

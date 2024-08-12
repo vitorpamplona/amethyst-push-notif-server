@@ -1,4 +1,5 @@
 import { pgPool } from './database-config.mjs'
+import format from 'pg-format'
 
 export async function getTokensByPubKey(pubkey) {
     const result = await pgPool.query(
@@ -68,6 +69,24 @@ export async function registerInDatabase(pubkey, relays, token) {
             }
         )
     }
+}
+
+export async function registerInDatabaseTuples(pubkeyRelaysTokenTuples) {
+    pgPool.query(
+        format(
+            `INSERT INTO subscriptions (PUB_KEY, RELAY, TOKEN) 
+            VALUES %L 
+            ON CONFLICT (PUB_KEY, RELAY, TOKEN) 
+            DO NOTHING;
+            `, pubkeyRelaysTokenTuples
+        ),
+        [],
+        (err, res) => {
+            if (err) {
+                console.log("Multi Database Insert: " + err)
+            }
+        }
+    )
 }
 
 export async function deleteToken(token) {
