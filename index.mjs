@@ -14,7 +14,6 @@ import {
     getTokensByPubKey, 
     deleteToken,
     deleteRelay,
-    //checkIfPubKeyExists, 
     checkIfThereIsANewRelay
 } from './database.mjs'
 
@@ -38,10 +37,7 @@ const sentCache = new LRUCache(
 )
 
 app.post('/register', (req, res) => {
-    const token = req.body.token
-    const events = req.body.events
-
-    register(token, events).then((processed) => {
+    register(req.body.token, req.body.events).then((processed) => {
         res.status(200).send(processed)
     });
 })
@@ -99,14 +95,7 @@ async function register(token, events) {
             .map(tag => tag[1])
 
         if (tokenTag[1] && veryOk && relayTags.length > 0) {
-            //let keyExist = await checkIfPubKeyExists(event.pubkey)
-            //if (!keyExist) {
-            //    newPubKeys = true
-            //}
-
-            //for (const relayTag of relayTags) {
             newRelays = await checkIfThereIsANewRelay(relayTags)
-            //}
 
             await registerInDatabaseTuples(relayTags.map(relayUrl => [event.pubkey,relayUrl || null,tokenTag[1]]))
         } else {
@@ -123,9 +112,6 @@ async function register(token, events) {
 
     if (newRelays)
         restartRelayPool()
-    //else if (newPubKeys) {
-    //    restartRelaySubs()
-    //} 
 
     return processed
 }
@@ -205,7 +191,6 @@ function isValidHttpUrl(string) {
 
 var isInRelayPollFunction = false
 
-
 // -- relay connection
 async function restartRelayPool() {
     if (isInRelayPollFunction) return 
@@ -258,27 +243,6 @@ async function restartRelayPool() {
     console.log("Restarted pool with", relays.length, "relays and", keys.length, "keys")
     isInRelayPollFunction = false
 }
-
-/*
-var isInSubRestartFunction = false
-
-async function restartRelaySubs() {
-    if (isInSubRestartFunction) return 
-    isInSubRestartFunction = true
-
-    let keys = await getAllKeys()
-
-    relayPool.subscribe("subid", 
-        {
-            kinds: [4, 9735, 1059],
-            limit: 1
-        }
-    );
-
-    console.log("Restarted subs with", keys.length, "keys")
-    isInSubRestartFunction = false
-}
-*/
 
 function createWrap(recipientPubkey, event, tags = []) {
     const wrapperPrivkey = generateSecretKey()
