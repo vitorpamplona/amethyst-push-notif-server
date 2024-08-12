@@ -58,6 +58,7 @@ function isValidUrl(urlString) {
 function isSupportedUrl(url) {
     return url &&
         !url.includes("brb.io") && // no broken relays
+        !url.includes("echo.websocket.org") && // test relay
         !url.includes("127.0") && // no local relays
         !url.includes("umbrel.local") && // no local relays
         !url.includes("192.168.") && // no local relays
@@ -91,7 +92,7 @@ async function register(token, events) {
             .find(tag => tag[0] == "challenge" && tag.length > 1)
 
         let relayTags = event.tags
-            .filter(tag => tag[0] == "relay" && tag.length > 1 && isSupportedUrl(tag[1]))
+            .filter(tag => tag[0] == "relay" && tag.length > 1 && tag[1].length > 1 && isSupportedUrl(tag[1]))
             .map(tag => tag[1])
             .filter(function (value, index, array) { 
               // remove duplicates 
