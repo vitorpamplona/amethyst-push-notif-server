@@ -93,6 +93,10 @@ async function register(token, events) {
         let relayTags = event.tags
             .filter(tag => tag[0] == "relay" && tag.length > 1 && isSupportedUrl(tag[1]))
             .map(tag => tag[1])
+            .filter(function (value, index, array) { 
+              // remove duplicates 
+              return array.indexOf(value) === index;
+            })
 
         if (tokenTag[1] && veryOk && relayTags.length > 0) {
             newRelays = await checkIfThereIsANewRelay(relayTags)
