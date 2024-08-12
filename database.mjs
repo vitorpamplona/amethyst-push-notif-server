@@ -162,6 +162,7 @@ export async function checkIfThereIsANewRelay(relayList) {
         []
     );
 
-    if (!result || !result.rows || !result.rows.length) return [];
+    if (!result || !result.rows || !result.rows.length) return false;
+
     return result.rows.length > 0
 }
