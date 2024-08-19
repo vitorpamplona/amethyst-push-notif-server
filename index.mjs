@@ -224,10 +224,14 @@ async function restartRelayPool() {
     });
     
     relayPool.on('event', (relay, sub_id, ev) => {
-        if (sentCache.has(ev.id)) return
-        sentCache.set(ev.id, ev.id)
-
-        notify(ev, relay)
+        try {
+            if (sentCache.has(ev.id)) return
+            sentCache.set(ev.id, ev.id)
+    
+            notify(ev, relay)
+        } catch (e) {
+            console.log(relay, ev, e)
+        }
     });
 
     relayPool.on('error', (relay, e) => {
