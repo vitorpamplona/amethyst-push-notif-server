@@ -141,18 +141,16 @@ async function notify(event, relay) {
                     const currentServer = urlWithTopic.origin
                     const currentTopic = urlWithTopic.pathname.substring(1)
 
-                    try {
-                        ntfyPublish({
-                            server: currentServer,
-                            topic: currentTopic,
-                            message: stringifiedWrappedEventToPush
-                        }).then((processed) => {
-                            if (!processed)
-                                deleteToken(tokenUrl)
-                        })
-                    } catch(e) {
-                        console.log("Error posting to NTFY", tokenUrl, e)
-                    }
+                    ntfyPublish({
+                        server: currentServer,
+                        topic: currentTopic,
+                        message: stringifiedWrappedEventToPush
+                    }).then((processed) => {
+                        if (!processed)
+                            deleteToken(tokenUrl)
+                    }).catch(err => {
+                        console.log("Error posting to NTFY", tokenUrl, err)
+                    })
                 });
                 console.log("NTFY New kind", event.kind, "event for", pubkeyTag[1], "with", stringifiedWrappedEventToPush.length, "bytes")
             }
