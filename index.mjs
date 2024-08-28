@@ -5,7 +5,7 @@ import { nip44 } from 'nostr-tools'
 import { finalizeEvent, generateSecretKey, verifyEvent } from 'nostr-tools/pure'
 import { RelayPool } from './relay-pool.js'
 import { LRUCache } from 'lru-cache'
-import ntfyPublish, { DEFAULT_PRIORITY } from '@cityssm/ntfy-publish'
+import ntfyPublish from '@cityssm/ntfy-publish'
 
 import { 
     registerInDatabaseTuples, 
@@ -142,13 +142,16 @@ async function notify(event, relay) {
                     const currentTopic = urlWithTopic.pathname.substring(1)
 
                     try {
-                        await ntfyPublish({
+                        ntfyPublish({
                             server: currentServer,
                             topic: currentTopic,
                             message: stringifiedWrappedEventToPush
+                        }).then((processed) => {
+                            if (!processed)
+                                deleteToken(tokenUrl)
                         })
                     } catch(e) {
-                        deleteToken(tokenUrl)
+                        console.log("Error posting to NTFY", tokenUrl, e)
                     }
                 });
                 console.log("NTFY New kind", event.kind, "event for", pubkeyTag[1], "with", stringifiedWrappedEventToPush.length, "bytes")
