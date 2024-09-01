@@ -136,9 +136,7 @@ async function notify(event, relay) {
 
             if (tokensAsUrls.length > 0) {                
                 tokensAsUrls.forEach(async function (tokenUrl) {
-                    const urlWithTopic = new URL(tokenUrl)
-
-                    fetch(urlWithTopic, {
+                    fetch(tokenUrl, {
                         method: 'POST',
                         body: stringifiedWrappedEventToPush,
                     }).then((response) => {
