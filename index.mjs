@@ -140,8 +140,10 @@ async function notify(event, relay) {
                         method: 'POST',
                         body: stringifiedWrappedEventToPush,
                     }).then((response) => {
-                        if (!response.ok)
+                        if (!response.ok) {
+                            console.log("Error posting to NTFY", stringifiedWrappedEventToPush.length, "chars.", tokenUrl, response.status, response.statusText)
                             deleteToken(tokenUrl)
+                        }
                     }).catch(err => {
                         console.log("Error posting to NTFY", stringifiedWrappedEventToPush.length, "chars.", tokenUrl, err)
                         //deleteToken(tokenUrl)
