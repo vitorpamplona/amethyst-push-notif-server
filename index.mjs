@@ -212,7 +212,7 @@ async function restartRelayPool() {
         relay.subscribe("subid", 
             {
                 kinds: [4, 9735, 1059],
-                limit: 0
+                limit: 1
             }
         )
     });
