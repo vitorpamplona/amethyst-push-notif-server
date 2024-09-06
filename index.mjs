@@ -200,12 +200,17 @@ async function restartRelayPool() {
     if (isInRelayPollFunction) return 
     isInRelayPollFunction = true
 
+    let relays = await getAllRelays()
+
+    if (relayPool) {
+        let hasNewRelay = relays.filter(x => !relayPool.has(x)).length > 0
+
+        if (!hasNewRelay) return
+    }
+
     if (relayPool) {
         relayPool.close()
     }
-
-    let relays = await getAllRelays()
-    let keys = await getAllKeys()
 
     relayPool = RelayPool( Array.from( relays ), {reconnect: true} )
 
@@ -248,7 +253,7 @@ async function restartRelayPool() {
 		//console.log("Error", relay.url, e.message)
 	})
 
-    console.log("Restarted pool with", relays.length, "relays and", keys.length, "keys")
+    console.log("Restarted pool with", relays.length, "relays")
     isInRelayPollFunction = false
 }
 
