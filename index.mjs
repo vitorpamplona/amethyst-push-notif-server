@@ -139,6 +139,7 @@ async function notify(event, relay) {
                     fetch(tokenUrl, {
                         method: 'POST',
                         body: stringifiedWrappedEventToPush,
+                        signal: AbortSignal.timeout(5000) // NTFY waits for 30 seconds to send a timeout when the user sent too many reqs
                     }).then((response) => {
                         if (!response.ok) {
                             console.log("Error posting to NTFY", stringifiedWrappedEventToPush.length, "chars.", tokenUrl, response.status, response.statusText)
