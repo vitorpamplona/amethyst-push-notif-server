@@ -39,7 +39,12 @@ function Relay(relay, opts={})
 
 function init_websocket(me) {
 	return new Promise((resolve, reject) => {
-		const ws = me.ws = new WS(me.url);
+		const ws = me.ws = new WS(me.url, undefined, {
+			followRedirects: true,
+			headers: {
+			  "User-Agent": "Amethyst Push Server"
+			}
+		});
 
 		let resolved = false
 		ws.onmessage = (m) => {
