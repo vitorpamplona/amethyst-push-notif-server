@@ -134,98 +134,48 @@ async function notify(event, relay) {
         if (tokens.length > 0) {
             const stringifiedWrappedEventToPush = JSON.stringify(createWrap(pubkeyTag[1], event))
 
-            if (stringifiedWrappedEventToPush.length > 4000 && (event.kind == 1059 || event.kind == 21059)) {
-                // NEW API, won't work in old Amethyst's 
-                const stringifiedWrappedEventToPush2 = JSON.stringify(event)
+            if (tokensAsUrls.length > 0) {                
+                tokensAsUrls.forEach(async function (tokenUrl) {
+                    fetch(tokenUrl, {
+                        method: 'POST',
+                        body: stringifiedWrappedEventToPush,
+                        signal: AbortSignal.timeout(5000) // NTFY waits for 30 seconds to send a timeout when the user sent too many reqs
+                    }).then((response) => {
+                        if (!response.ok) {
+                            console.log("Error posting to NTFY", stringifiedWrappedEventToPush.length, "chars.", tokenUrl, response.status, response.statusText)
+                            deleteToken(tokenUrl)
+                        }
+                    }).catch(err => {
+                        console.log("Error posting to NTFY", stringifiedWrappedEventToPush.length, "chars.", tokenUrl, err)
+                        //deleteToken(tokenUrl)
+                    })
+                });
+                console.log("NTFY New kind", event.kind, "event for", pubkeyTag[1], "with", stringifiedWrappedEventToPush.length, "bytes")
+            }
 
-                if (tokensAsUrls.length > 0) {                
-                    tokensAsUrls.forEach(async function (tokenUrl) {
-                        fetch(tokenUrl, {
-                            method: 'POST',
-                            body: stringifiedWrappedEventToPush2,
-                            signal: AbortSignal.timeout(5000) // NTFY waits for 30 seconds to send a timeout when the user sent too many reqs
-                        }).then((response) => {
-                            if (!response.ok) {
-                                console.log("Error posting to NTFY", stringifiedWrappedEventToPush2.length, "chars.", tokenUrl, response.status, response.statusText)
-                                deleteToken(tokenUrl)
-                            }
-                        }).catch(err => {
-                            console.log("Error posting to NTFY", stringifiedWrappedEventToPush2.length, "chars.", tokenUrl, err)
-                            //deleteToken(tokenUrl)
-                        })
-                    });
-                    console.log("API2: NTFY New kind", event.kind, "event for", pubkeyTag[1], "with", stringifiedWrappedEventToPush2.length, "bytes")
-                }
-
-                if (firebaseTokens.length > 0) {
-                    const message = {
-                        data: {
-                            encryptedEvent: stringifiedWrappedEventToPush2
-                        },
-                        tokens: firebaseTokens
-                    };
-        
-                    admin.messaging().sendEachForMulticast(message).then((response) => {
-                        if (response.failureCount > 0) {
-                            response.responses.forEach((resp, idx) => {
-                                if (!resp.success) {
-                                    console.log('Failed: ', resp.error.code, resp.error.message, JSON.stringify(message).length, "chars");
-                                    if (resp.error.code === "messaging/registration-token-not-registered") {
-                                        console.log('Deleting Token ', tokens[idx]);
-                                        deleteToken(tokens[idx])
-                                    }
+            if (firebaseTokens.length > 0) {
+                const message = {
+                    data: {
+                        encryptedEvent: stringifiedWrappedEventToPush
+                    },
+                    tokens: firebaseTokens
+                };
+    
+                admin.messaging().sendEachForMulticast(message).then((response) => {
+                    if (response.failureCount > 0) {
+                        response.responses.forEach((resp, idx) => {
+                            if (!resp.success) {
+                                console.log('Failed: ', resp.error.code, resp.error.message, JSON.stringify(message).length, "chars");
+                                if (resp.error.code === "messaging/registration-token-not-registered") {
+                                    console.log('Deleting Token ', tokens[idx]);
+                                    deleteToken(tokens[idx])
                                 }
-                            });
-                        } 
-                    });   
-                    
-                    console.log("API2: Firebase New kind", event.kind, "event for", pubkeyTag[1], "with", stringifiedWrappedEventToPush2.length, "bytes")
-                }
-
-            } else {
-                if (tokensAsUrls.length > 0) {                
-                    tokensAsUrls.forEach(async function (tokenUrl) {
-                        fetch(tokenUrl, {
-                            method: 'POST',
-                            body: stringifiedWrappedEventToPush,
-                            signal: AbortSignal.timeout(5000) // NTFY waits for 30 seconds to send a timeout when the user sent too many reqs
-                        }).then((response) => {
-                            if (!response.ok) {
-                                console.log("Error posting to NTFY", stringifiedWrappedEventToPush.length, "chars.", tokenUrl, response.status, response.statusText)
-                                deleteToken(tokenUrl)
                             }
-                        }).catch(err => {
-                            console.log("Error posting to NTFY", stringifiedWrappedEventToPush.length, "chars.", tokenUrl, err)
-                            //deleteToken(tokenUrl)
-                        })
-                    });
-                    console.log("NTFY New kind", event.kind, "event for", pubkeyTag[1], "with", stringifiedWrappedEventToPush.length, "bytes")
-                }
-
-                if (firebaseTokens.length > 0) {
-                    const message = {
-                        data: {
-                            encryptedEvent: stringifiedWrappedEventToPush
-                        },
-                        tokens: firebaseTokens
-                    };
-        
-                    admin.messaging().sendEachForMulticast(message).then((response) => {
-                        if (response.failureCount > 0) {
-                            response.responses.forEach((resp, idx) => {
-                                if (!resp.success) {
-                                    console.log('Failed: ', resp.error.code, resp.error.message, JSON.stringify(message).length, "chars");
-                                    if (resp.error.code === "messaging/registration-token-not-registered") {
-                                        console.log('Deleting Token ', tokens[idx]);
-                                        deleteToken(tokens[idx])
-                                    }
-                                }
-                            });
-                        } 
-                    });   
-                    
-                    console.log("Firebase New kind", event.kind, "event for", pubkeyTag[1], "with", stringifiedWrappedEventToPush.length, "bytes")
-                }
+                        });
+                    } 
+                });   
+                
+                console.log("Firebase New kind", event.kind, "event for", pubkeyTag[1], "with", stringifiedWrappedEventToPush.length, "bytes")
             }
         }
     }
