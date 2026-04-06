@@ -217,7 +217,7 @@ async function restartRelayPool() {
     relayPool.on('open', relay => {
         relay.subscribe("subid", 
             {
-                kinds: [4, 9735, 1059],
+                kinds: [4, 9735, 1059, 21059],
                 limit: 1
             }
         )
