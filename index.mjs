@@ -326,6 +326,7 @@ async function restartRelayPool() {
             console.log("Can't connect, deleting relay ", relay.url)
             relayPool.remove(relay.url)
             deleteRelay(relay.url)
+            relayReliability.set(relay.url, 0);
         } 
 
         const current = relayReliability.get(relay.url) || 0
@@ -338,6 +339,7 @@ async function restartRelayPool() {
             console.log("Five failures, deleting relay ", relay.url)
             relayPool.remove(relay.url)
             deleteRelay(relay.url)
+            relayReliability.set(relay.url, 0);
         }
 
 		// console.log("Error", relay.url, e.message)
