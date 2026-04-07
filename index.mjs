@@ -293,12 +293,13 @@ async function restartRelayPool() {
     relayPool.on('event', (relay, sub_id, ev) => {
         if (relay.isLive) {
             try {
+                if (sentCache.has(ev.id)) return
+
                 const nowUnix = Math.floor(Date.now() / 1000)
                 if (
                     ((ev.kind == 4 || ev.kind == 9735 || ev.kind == 21059) && ev.created_at > nowUnix - 30) ||
                     (ev.kind == 1059 && ev.created_at > nowUnix - 172800)
                 ) {
-                    if (sentCache.has(ev.id)) return
                     sentCache.set(ev.id, ev.id)
 
                     notify(ev, relay)
