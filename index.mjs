@@ -277,17 +277,20 @@ async function restartRelayPool() {
     });
     
     relayPool.on('eose', relay => {
+        relay.isLive = true
         //console.log("EOSE")
     });
     
     relayPool.on('event', (relay, sub_id, ev) => {
-        try {
-            if (sentCache.has(ev.id)) return
-            sentCache.set(ev.id, ev.id)
-    
-            notify(ev, relay)
-        } catch (e) {
-            console.log(relay, ev, e)
+        if (relay.isLive) {
+            try {
+                if (sentCache.has(ev.id)) return
+                sentCache.set(ev.id, ev.id)
+        
+                notify(ev, relay)
+            } catch (e) {
+                console.log(relay, ev, e)
+            }
         }
     });
 
