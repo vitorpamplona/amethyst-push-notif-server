@@ -56,7 +56,7 @@ function init_websocket(me) {
 			if (me.onfn.close)
 				me.onfn.close(e)
 			if (me.reconnecting)
-				return reject(new Error("close during reconnect"))
+				return reject(new Error("close during reconnect: " + e.message))
 			if (!me.manualClose && me.opts.reconnect)
 				reconnect(me)
 		}
@@ -64,7 +64,7 @@ function init_websocket(me) {
 			if (me.onfn.error)
 				me.onfn.error(e)
 			if (me.reconnecting)
-				return reject(new Error("error during reconnect"))
+				return reject(new Error("error during reconnect:" + e.message))
 			if (!me.manualClose && me.opts.reconnect)
 				reconnect(me)
 		}
