@@ -154,6 +154,7 @@ async function notify(event, relay) {
                                     deleteToken(tokenUrl)
                                 }
                             }
+                            console.log("Posting to NTFY", stringifiedWrappedEventToPush2.length, "chars.", tokenUrl, response.status, response.statusText, response)
                         }).catch(err => {
                             console.log("Error posting to NTFY", stringifiedWrappedEventToPush2.length, "chars.", tokenUrl, err)
                             //deleteToken(tokenUrl)
