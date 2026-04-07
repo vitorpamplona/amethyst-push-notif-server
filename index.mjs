@@ -324,7 +324,7 @@ async function restartRelayPool() {
             deleteRelay(relay.url)
         } 
 
-		//console.log("Error", relay.url, e.message)
+		console.log("Error", relay.url, e.message)
 	})
 
     console.log("Restarted pool with", relays.length, "relays")

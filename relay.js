@@ -56,7 +56,7 @@ function init_websocket(me) {
 			if (me.onfn.close)
 				me.onfn.close(e)
 			if (me.reconnecting)
-				return reject(new Error("close during reconnect: " + e.code + " " + e.reason))
+				return reject(new Error("close during reconnect"))
 			if (!me.manualClose && me.opts.reconnect)
 				reconnect(me)
 		}
@@ -64,7 +64,7 @@ function init_websocket(me) {
 			if (me.onfn.error)
 				me.onfn.error(e)
 			if (me.reconnecting)
-				return reject(e)
+				return reject(new Error("error during reconnect"))
 			if (!me.manualClose && me.opts.reconnect)
 				reconnect(me)
 		}
@@ -86,14 +86,13 @@ function sleep(ms) {
 
 async function reconnect(me)
 {
-	const reconnecting = true
 	let n = 10000
 	try {
 		me.reconnecting = true
 		await init_websocket(me)
 		me.reconnecting = false
 	} catch (e) {
-		console.error(`error thrown during reconnect... ${me.url} trying again in ${n} ms`, e)
+		// console.error(`error thrown during reconnect... ${me.url} trying again in ${n} ms`)
 		await sleep(n)
 		n *= 1.5
 	}
