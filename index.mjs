@@ -56,7 +56,7 @@ function isValidUrl(urlString) {
 
 function isSupportedUrl(url) {
     return url &&
-        !url.includes("brb.io") && // no broken relays
+        !url.includes("brb.io") && // no broken relayss
         !url.includes("echo.websocket.org") && // test relay
         !url.includes("127.0") && // no local relays
         !url.includes("umbrel.local") && // no local relays
