@@ -135,23 +135,46 @@ async function notify(event, relay) {
         if (tokens.length > 0) {
             const stringifiedWrappedEventToPush = JSON.stringify(createWrap(pubkeyTag[1], event))
 
-            if (tokensAsUrls.length > 0) {                
-                tokensAsUrls.forEach(async function (tokenUrl) {
-                    fetch(tokenUrl, {
-                        method: 'POST',
-                        body: stringifiedWrappedEventToPush,
-                        signal: AbortSignal.timeout(5000) // NTFY waits for 30 seconds to send a timeout when the user sent too many reqs
-                    }).then((response) => {
-                        if (!response.ok && response.status != 429) {
-                            console.log("Error posting to NTFY", stringifiedWrappedEventToPush.length, "chars.", tokenUrl, response.status, response.statusText)
-                            deleteToken(tokenUrl)
-                        }
-                    }).catch(err => {
-                        console.log("Error posting to NTFY", stringifiedWrappedEventToPush.length, "chars.", tokenUrl, err)
-                        //deleteToken(tokenUrl)
-                    })
-                });
-                console.log("NTFY New kind", event.kind, "event for", pubkeyTag[1], "with", stringifiedWrappedEventToPush.length, "bytes")
+            if (tokensAsUrls.length > 0) {      
+                if (stringifiedWrappedEventToPush.length > 4000) {
+                    // too big, send a wake up.
+                    const wakeUpEvent = JSON.stringify(createWakeUpEvent(event, relay.url))
+                    const stringifiedWrappedEventToPush2 = JSON.stringify(createWrap(pubkeyTag[1], wakeUpEvent))
+
+                    tokensAsUrls.forEach(async function (tokenUrl) {
+                        fetch(tokenUrl, {
+                            method: 'POST',
+                            body: stringifiedWrappedEventToPush2,
+                            signal: AbortSignal.timeout(5000) // NTFY waits for 30 seconds to send a timeout when the user sent too many reqs
+                        }).then((response) => {
+                            if (!response.ok && response.status != 429) {
+                                console.log("Error posting to NTFY", stringifiedWrappedEventToPush2.length, "chars.", tokenUrl, response.status, response.statusText)
+                                deleteToken(tokenUrl)
+                            }
+                        }).catch(err => {
+                            console.log("Error posting to NTFY", stringifiedWrappedEventToPush2.length, "chars.", tokenUrl, err)
+                            //deleteToken(tokenUrl)
+                        })
+                    });
+                    console.log("NTFY Wake kind", event.kind, "event for", pubkeyTag[1], "with", stringifiedWrappedEventToPush2.length, "bytes")
+                } else {
+                    tokensAsUrls.forEach(async function (tokenUrl) {
+                        fetch(tokenUrl, {
+                            method: 'POST',
+                            body: stringifiedWrappedEventToPush,
+                            signal: AbortSignal.timeout(5000) // NTFY waits for 30 seconds to send a timeout when the user sent too many reqs
+                        }).then((response) => {
+                            if (!response.ok && response.status != 429) {
+                                console.log("Error posting to NTFY", stringifiedWrappedEventToPush.length, "chars.", tokenUrl, response.status, response.statusText)
+                                deleteToken(tokenUrl)
+                            }
+                        }).catch(err => {
+                            console.log("Error posting to NTFY", stringifiedWrappedEventToPush.length, "chars.", tokenUrl, err)
+                            //deleteToken(tokenUrl)
+                        })
+                    });
+                    console.log("NTFY New kind", event.kind, "event for", pubkeyTag[1], "with", stringifiedWrappedEventToPush.length, "bytes")
+                }
             }
 
             if (firebaseTokens.length > 0) {
