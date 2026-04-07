@@ -270,6 +270,7 @@ async function restartRelayPool() {
     relayPool = RelayPool( Array.from( relays ), {reconnect: true} )
 
     relayPool.on('open', relay => {
+        relayReliability.set(relay.url, 0);
         const nowUnix = Math.floor(Date.now() / 1000)
         relay.subscribe("realtime", 
             {
