@@ -334,11 +334,11 @@ async function restartRelayPool() {
 
         relayReliability.set(relay.url, current + 1);
 
-        if (relayReliability.get(relay.url) > 8) {
+        if (relayReliability.get(relay.url) > 10) {
             console.log("Error ", relay.url, current)
         }
 
-        if (relayReliability.get(relay.url) > 13) {
+        if (relayReliability.get(relay.url) > 25) {
             console.log("Five failures, deleting relay ", relay.url)
             relayPool.remove(relay.url)
             deleteRelay(relay.url)
