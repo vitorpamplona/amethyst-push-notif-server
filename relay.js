@@ -1,11 +1,11 @@
 const WS = typeof WebSocket !== 'undefined' ? WebSocket : require('ws')
 
 Relay.prototype.wait_connected = async function relay_wait_connected(data) {
-	let retry = 100000
+	let retry = 3000
 	while (true) {
 		if (!this.manualClose && this.ws && this.ws.readyState !== 1) {
 			await sleep(retry)
-			retry *= 1.5
+			retry *= Math.min(retry * 1.5, 5000)
 		}
 		else {
 			return
@@ -84,18 +84,23 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-async function reconnect(me)
-{
-	let n = 10000
-	try {
-		me.reconnecting = true
-		await init_websocket(me)
-		me.reconnecting = false
-	} catch (e) {
-		// console.error(`error thrown during reconnect... ${me.url} trying again in ${n} ms`)
-		await sleep(n)
-		n *= 1.5
-	}
+async function reconnect(me) {
+    // 1. Prevent multiple simultaneous reconnect loops
+    if (me.reconnecting || me.manualClose) return;
+
+    me.reconnecting = true;
+    let n = 10000;
+
+    while (me.reconnecting && !me.manualClose) {
+        try {
+            await init_websocket(me);
+            me.reconnecting = false;
+            return; 
+        } catch (e) {
+            await sleep(n);
+            n = n * 1.5
+        }
+    }
 }
 
 Relay.prototype.on = function relayOn(method, fn) {

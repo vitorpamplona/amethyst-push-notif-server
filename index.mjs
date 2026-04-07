@@ -38,7 +38,7 @@ const sentCache = new LRUCache(
 )
 
 app.post('/register', (req, res) => {
-    register(req.body.token, req.body.events).then((processed) => {
+    register(req.body.events).then((processed) => {
         res.status(200).send(processed)
     });
 })
@@ -80,8 +80,7 @@ function isSupportedUrl(url) {
 
 // -- registering tokens with pubkeys. 
 
-async function register(token, events) {
-    console.log("Registration start ", token, events.length)
+async function register(events) {
     let processed = []
 
     //let newPubKeys = false
@@ -119,8 +118,6 @@ async function register(token, events) {
 
     if (newRelays)
         restartRelayPool()
-
-    console.log("Registration end ", token, events.length)
 
     return processed
 }
