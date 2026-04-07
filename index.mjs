@@ -267,9 +267,8 @@ async function restartRelayPool() {
 
     relayPool = RelayPool( Array.from( relays ), {reconnect: true} )
 
-    const nowUnix = Math.floor(Date.now() / 1000)
-
     relayPool.on('open', relay => {
+        const nowUnix = Math.floor(Date.now() / 1000)
         relay.subscribe("subid", 
             {
                 kinds: [4, 9735, 21059],
@@ -301,7 +300,9 @@ async function restartRelayPool() {
                     (ev.kind == 1059 && ev.created_at > nowUnix - 172800)
                 ) {
                     notify(ev, relay)
-                }        
+                } else {
+                    console.log("Outside", relay, ev)
+                }       
             } catch (e) {
                 console.log(relay, ev, e)
             }
