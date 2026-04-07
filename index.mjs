@@ -345,7 +345,7 @@ async function restartRelayPool() {
         }
 
         if (relayReliability.get(relay.url) > 25) {
-            console.log("Five failures, deleting relay ", relay.url)
+            console.log("25 failures, deleting relay ", relay.url)
             relayPool.remove(relay.url)
             deleteRelay(relay.url)
             relayReliability.set(relay.url, 0);
