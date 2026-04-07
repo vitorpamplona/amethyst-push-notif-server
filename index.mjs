@@ -301,10 +301,10 @@ async function restartRelayPool() {
                 ) {
                     notify(ev, relay)
                 } else {
-                    console.log("Outside", relay, ev)
+                    console.log("Outside", relay.url, ev.kind, ev.created_at, nowUnix)
                 }       
             } catch (e) {
-                console.log(relay, ev, e)
+                console.log(relay.url, ev, e)
             }
         }
     });
