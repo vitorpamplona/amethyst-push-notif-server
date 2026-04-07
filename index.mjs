@@ -282,9 +282,7 @@ async function restartRelayPool() {
         ) {
             relayPool.remove(relay.url)
             deleteRelay(relay.url)
-        } else {
-            console.log("Error", relay.url, e.message, e)
-        }
+        } 
 
 		//console.log("Error", relay.url, e.message)
 	})
