@@ -154,28 +154,58 @@ async function notify(event, relay) {
             }
 
             if (firebaseTokens.length > 0) {
-                const message = {
-                    data: {
-                        encryptedEvent: stringifiedWrappedEventToPush
-                    },
-                    tokens: firebaseTokens
-                };
-    
-                admin.messaging().sendEachForMulticast(message).then((response) => {
-                    if (response.failureCount > 0) {
-                        response.responses.forEach((resp, idx) => {
-                            if (!resp.success) {
-                                console.log('Failed: ', resp.error.code, resp.error.message, JSON.stringify(message).length, "chars");
-                                if (resp.error.code === "messaging/registration-token-not-registered") {
-                                    console.log('Deleting Token ', tokens[idx]);
-                                    deleteToken(tokens[idx])
+                if (stringifiedWrappedEventToPush.length > 4000) {
+                    // too big, send a wake up.
+                    const wakeUpEvent = JSON.stringify(createWakeUpEvent(event, relay.url))
+                    const stringifiedWrappedEventToPush2 = JSON.stringify(createWrap(pubkeyTag[1], wakeUpEvent))
+
+                    const message = {
+                        data: {
+                            encryptedEvent: stringifiedWrappedEventToPush2
+                        },
+                        tokens: firebaseTokens
+                    };
+        
+                    admin.messaging().sendEachForMulticast(message).then((response) => {
+                        if (response.failureCount > 0) {
+                            response.responses.forEach((resp, idx) => {
+                                if (!resp.success) {
+                                    console.log('Failed: ', resp.error.code, resp.error.message, JSON.stringify(message).length, "chars");
+                                    if (resp.error.code === "messaging/registration-token-not-registered") {
+                                        console.log('Deleting Token ', tokens[idx]);
+                                        deleteToken(tokens[idx])
+                                    }
                                 }
-                            }
-                        });
-                    } 
-                });   
+                            });
+                        } 
+                    });   
+                    
+                    console.log("Firebase Wake kind", event.kind, "event for", pubkeyTag[1], "with", stringifiedWrappedEventToPush2.length, "bytes")
+                } else {
+                    const message = {
+                        data: {
+                            encryptedEvent: stringifiedWrappedEventToPush
+                        },
+                        tokens: firebaseTokens
+                    };
+        
+                    admin.messaging().sendEachForMulticast(message).then((response) => {
+                        if (response.failureCount > 0) {
+                            response.responses.forEach((resp, idx) => {
+                                if (!resp.success) {
+                                    console.log('Failed: ', resp.error.code, resp.error.message, JSON.stringify(message).length, "chars");
+                                    if (resp.error.code === "messaging/registration-token-not-registered") {
+                                        console.log('Deleting Token ', tokens[idx]);
+                                        deleteToken(tokens[idx])
+                                    }
+                                }
+                            });
+                        } 
+                    });   
+                    
+                    console.log("Firebase New kind", event.kind, "event for", pubkeyTag[1], "with", stringifiedWrappedEventToPush.length, "bytes")
+                }
                 
-                console.log("Firebase New kind", event.kind, "event for", pubkeyTag[1], "with", stringifiedWrappedEventToPush.length, "bytes")
             }
         }
     }
@@ -272,5 +302,23 @@ function createWrap(recipientPubkey, event, tags = []) {
 
     return finalizeEvent(wrapTemplate, wrapperPrivkey)
   }
+
+function createWakeUpEvent(event, relayUrl) {
+    const wrapperPrivkey = generateSecretKey()
+    const now = Math.floor(Date.now() / 1000)
+  
+    const wakeUpEventTemplate = {
+        kind: 23903,
+        created_at: now,
+        tags: [
+            ["e", event.id, relayUrl],
+            ["k", event.kind],
+            ["p", event.pubkey]
+        ],
+        content: ""
+    } 
+
+    return finalizeEvent(wakeUpEventTemplate, wrapperPrivkey)
+  }  
 
 restartRelayPool()
