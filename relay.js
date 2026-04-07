@@ -98,7 +98,7 @@ async function reconnect(me) {
             return; 
         } catch (e) {
             await sleep(n);
-            n = n * 1.5
+            n = n * 2
         }
     }
 }
