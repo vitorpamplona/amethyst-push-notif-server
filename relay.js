@@ -87,13 +87,13 @@ function sleep(ms) {
 async function reconnect(me)
 {
 	const reconnecting = true
-	let n = 100
+	let n = 10000
 	try {
 		me.reconnecting = true
 		await init_websocket(me)
 		me.reconnecting = false
-	} catch {
-		//console.error(`error thrown during reconnect... trying again in ${n} ms`)
+	} catch (e) {
+		console.error(`error thrown during reconnect... trying again in ${n} ms`, e.message)
 		await sleep(n)
 		n *= 1.5
 	}
