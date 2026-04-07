@@ -81,6 +81,7 @@ function isSupportedUrl(url) {
 // -- registering tokens with pubkeys. 
 
 async function register(token, events) {
+    console.log("Registration start ", token, events.length)
     let processed = []
 
     //let newPubKeys = false
@@ -105,7 +106,7 @@ async function register(token, events) {
 
             await registerInDatabaseTuples(relayTags.map(relayUrl => [event.pubkey,relayUrl || null,tokenTag[1]]))
         } else {
-            console.log("Invalid registration", veryOk, tokenTag, relayTags)
+            console.log("Invalid registration", veryOk, tokenTag, event.tags)
         }
 
         processed.push(
@@ -118,6 +119,8 @@ async function register(token, events) {
 
     if (newRelays)
         restartRelayPool()
+
+    console.log("Registration end ", token, events.length)
 
     return processed
 }
@@ -328,7 +331,11 @@ async function restartRelayPool() {
             deleteRelay(relay.url)
         } 
 
-        relayReliability.set(relay.url, (relayReliability.get(relay.url) || 0) + 1);
+        const current = relayReliability.get(relay.url) || 0
+
+        relayReliability.set(relay.url, current + 1);
+
+        console.log("Error ", relay.url, current)
 
         if (relayReliability.get(relay.url) > 5) {
             console.log("Five failures, deleting relay ", relay.url)
