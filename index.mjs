@@ -267,11 +267,19 @@ async function restartRelayPool() {
 
     relayPool = RelayPool( Array.from( relays ), {reconnect: true} )
 
+    const nowUnix = Math.floor(Date.now() / 1000)
+
     relayPool.on('open', relay => {
         relay.subscribe("subid", 
             {
-                kinds: [4, 9735, 1059, 21059],
+                kinds: [4, 9735, 21059],
                 limit: 1,
+                since: nowUnix - 30
+            },
+            {
+                kinds: [1059],
+                limit: 1,
+                since: nowUnix - 172800
             }
         )
     });
@@ -286,8 +294,14 @@ async function restartRelayPool() {
             try {
                 if (sentCache.has(ev.id)) return
                 sentCache.set(ev.id, ev.id)
-        
-                notify(ev, relay)
+  
+                const nowUnix = Math.floor(Date.now() / 1000)
+                if (
+                    ((ev.kind == 4 || ev.kind == 9735 || ev.kind == 21059) && ev.created_at > nowUnix - 30) ||
+                    (ev.kind == 1059 && ev.created_at > nowUnix - 172800)
+                ) {
+                    notify(ev, relay)
+                }        
             } catch (e) {
                 console.log(relay, ev, e)
             }
