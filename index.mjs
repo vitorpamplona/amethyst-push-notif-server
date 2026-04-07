@@ -23,6 +23,8 @@ const port = process.env.PORT || 3000
 
 var relayPool;
 
+const relayReliability = new Map();
+
 const sentCache = new LRUCache(
     {
         max: 5000,
@@ -288,6 +290,7 @@ async function restartRelayPool() {
     relayPool.on('eose', relay => {
         relay.isLive = true
         //console.log("EOSE")
+        relayReliability.set(relay.url, 0);
     });
     
     relayPool.on('event', (relay, sub_id, ev) => {
@@ -324,7 +327,14 @@ async function restartRelayPool() {
             deleteRelay(relay.url)
         } 
 
-		console.log("Error", relay.url, e.message)
+        relayReliability.set(relay.url, (relayReliability.get(relay.url) || 0) + 1);
+
+        if (relayReliability.get(relay.url) > 5) {
+            relayPool.remove(relay.url)
+            deleteRelay(relay.url)
+        }
+
+		// console.log("Error", relay.url, e.message)
 	})
 
     console.log("Restarted pool with", relays.length, "relays")
