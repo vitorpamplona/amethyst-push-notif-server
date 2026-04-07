@@ -170,7 +170,7 @@ async function notify(event, relay) {
                         }).then((response) => {
                             if (!response.ok) {
                                 let after = response.headers.get('Retry-After');
-                                console.log("Error posting to NTFY", stringifiedWrappedEventToPush.length, "chars.", response.status, response.statusText, "retry after", after)
+                                console.log("Error posting to NTFY", stringifiedWrappedEventToPush.length, "chars.", tokenUrl, response.status, response.statusText, "retry after", after)
                                 if (response.status != 429) {
                                     deleteToken(tokenUrl)
                                 }
