@@ -323,6 +323,7 @@ async function restartRelayPool() {
             || e.message.includes("Invalid WebSocket frame: FIN must be set")
             || e.message.includes("The URL's protocol must be one of")
         ) {
+            console.log("Can't connect, deleting relay ", relay.url)
             relayPool.remove(relay.url)
             deleteRelay(relay.url)
         } 
@@ -330,6 +331,7 @@ async function restartRelayPool() {
         relayReliability.set(relay.url, (relayReliability.get(relay.url) || 0) + 1);
 
         if (relayReliability.get(relay.url) > 5) {
+            console.log("Five failures, deleting relay ", relay.url)
             relayPool.remove(relay.url)
             deleteRelay(relay.url)
         }
