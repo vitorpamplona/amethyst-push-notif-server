@@ -269,12 +269,14 @@ async function restartRelayPool() {
 
     relayPool.on('open', relay => {
         const nowUnix = Math.floor(Date.now() / 1000)
-        relay.subscribe("subid", 
+        relay.subscribe("realtime", 
             {
                 kinds: [4, 9735, 21059],
                 limit: 1,
                 since: nowUnix - 30
-            },
+            }
+        )
+        relay.subscribe("delayed", 
             {
                 kinds: [1059],
                 limit: 1,
