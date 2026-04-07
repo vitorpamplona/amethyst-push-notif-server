@@ -64,7 +64,7 @@ function init_websocket(me) {
 			if (me.onfn.error)
 				me.onfn.error(e)
 			if (me.reconnecting)
-				return reject(new Error("error during reconnect: " + e.code + " " + e.reason))
+				return reject(e)
 			if (!me.manualClose && me.opts.reconnect)
 				reconnect(me)
 		}
