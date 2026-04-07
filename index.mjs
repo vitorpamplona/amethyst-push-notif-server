@@ -123,8 +123,9 @@ async function register(token, events) {
 // -- notifiying new events to pub keys. 
 
 async function notify(event, relay) {
+    const thirtySecondsAgo = Math.floor(Date.now() / 1000) - 30;
     let pubkeyTag = event.tags.find(tag => tag[0] == "p" && tag.length > 1)
-    if (pubkeyTag && pubkeyTag[1]) {
+    if (pubkeyTag && pubkeyTag[1] && event.created_at > thirtySecondsAgo) {
         //console.log("New kind", event.kind, "event for", pubkeyTag[1], "from", relay.url)
 
         let tokens = await getTokensByPubKey(pubkeyTag[1])
@@ -244,11 +245,14 @@ async function restartRelayPool() {
 
     relayPool = RelayPool( Array.from( relays ), {reconnect: true} )
 
+    const tenSecondsAgo = Math.floor(Date.now() / 1000) - 10;
+
     relayPool.on('open', relay => {
         relay.subscribe("subid", 
             {
                 kinds: [4, 9735, 1059, 21059],
-                limit: 1
+                limit: 1,
+                since: tenSecondsAgo
             }
         )
     });
