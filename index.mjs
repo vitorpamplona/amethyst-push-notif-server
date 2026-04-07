@@ -275,7 +275,7 @@ async function restartRelayPool() {
             {
                 kinds: [4, 9735, 21059],
                 limit: 1,
-                since: nowUnix - 30
+                since: nowUnix - 100
             }
         )
         relay.subscribe("delayed", 
@@ -300,7 +300,7 @@ async function restartRelayPool() {
 
                 const nowUnix = Math.floor(Date.now() / 1000)
                 if (
-                    ((ev.kind == 4 || ev.kind == 9735 || ev.kind == 21059) && ev.created_at > nowUnix - 30) ||
+                    ((ev.kind == 4 || ev.kind == 9735 || ev.kind == 21059) && ev.created_at > nowUnix - 100) ||
                     (ev.kind == 1059 && ev.created_at > nowUnix - 172800)
                 ) {
                     sentCache.set(ev.id, ev.id)
