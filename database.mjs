@@ -39,6 +39,14 @@ export async function getAllRelays() {
     const result = await pgPool.query(
         `SELECT RTRIM(TRIM(RELAY),'/') AS relay, COUNT(*) AS votes
         FROM subscriptions 
+        where RELAY NOT LIKE '% %' 
+          AND RELAY NOT LIKE '%' || E'\n' || '%'
+          AND RELAY NOT LIKE '%' || E'\r' || '%'
+          AND RELAY NOT LIKE 'wss://wss%'
+          AND (RELAY LIKE 'wss://%' OR RELAY LIKE 'ws://%')
+          AND regexp_count(RELAY, '//') < 2
+          AND RELAY NOT LIKE '%@%' 
+          AND RELAY NOT LIKE '%#%' 
         group by RTRIM(TRIM(RELAY),'/')
         order by votes desc
         `
