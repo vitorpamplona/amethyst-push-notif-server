@@ -375,8 +375,6 @@ function createWrap(recipientPubkey, event, tags = []) {
   }
 
 function createWakeUpEvent(event, relayUrl) {
-    console.log("createWakeUpEvent", event, relayUrl)
-
     const wrapperPrivkey = generateSecretKey()
     const now = Math.floor(Date.now() / 1000)
   
@@ -385,13 +383,11 @@ function createWakeUpEvent(event, relayUrl) {
         created_at: now,
         tags: [
             ["e", event.id, relayUrl],
-            ["k", event.kind],
+            ["k", event.kind.toString()],
             ["p", event.pubkey]
         ],
         content: ""
     } 
-
-        console.log("createWakeUpEvent 2", wakeUpEventTemplate)
 
     return finalizeEvent(wakeUpEventTemplate, wrapperPrivkey)
   }  
