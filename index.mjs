@@ -139,7 +139,7 @@ async function notify(event, relay) {
             if (tokensAsUrls.length > 0) {      
                 if (stringifiedWrappedEventToPush.length > 4000) {
                     // too big, send a wake up.
-                    const wakeUpEvent = JSON.stringify(createWakeUpEvent(event, relay.url))
+                    const wakeUpEvent = createWakeUpEvent(event, relay.url)
                     const stringifiedWrappedEventToPush2 = JSON.stringify(createWrap(pubkeyTag[1], wakeUpEvent))
 
                     tokensAsUrls.forEach(async function (tokenUrl) {
@@ -187,7 +187,7 @@ async function notify(event, relay) {
             if (firebaseTokens.length > 0) {
                 if (stringifiedWrappedEventToPush.length > 4000) {
                     // too big, send a wake up.
-                    const wakeUpEvent = JSON.stringify(createWakeUpEvent(event, relay.url))
+                    const wakeUpEvent = createWakeUpEvent(event, relay.url)
                     const stringifiedWrappedEventToPush2 = JSON.stringify(createWrap(pubkeyTag[1], wakeUpEvent))
 
                     const message = {
