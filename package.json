@@ -9,12 +9,12 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@nostr/tools": "npm:@jsr/nostr__tools@^2.23.3",
     "body-parser": "^2.2.2",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "firebase-admin": "^13.8.0",
     "lru-cache": "^11.3.5",
-    "nostr-tools": "^2.23.3",
     "pg": "^8.20.0",
     "pg-format": "^1.0.4",
     "ws": "^8.20.0"

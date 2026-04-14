@@ -1,8 +1,8 @@
 import express from 'express'
 import bodyparser from 'body-parser'
 import { admin } from './firebase-config.js'
-import { nip44 } from 'nostr-tools'
-import { finalizeEvent, generateSecretKey, verifyEvent } from 'nostr-tools/pure'
+import { nip44 } from '@nostr/tools'
+import { finalizeEvent, generateSecretKey, verifyEvent } from '@nostr/tools/pure'
 import { RelayPool } from './relay-pool.js'
 import { LRUCache } from 'lru-cache'
 
