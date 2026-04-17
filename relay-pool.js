@@ -19,8 +19,11 @@ function RelayPool(relays, opts)
 
 RelayPool.prototype.close = function relayPoolClose() {
 	for (const relay of this.relays) {
+		relay.onfn = {}
 		relay.close()
 	}
+	this.onfn = {}
+	this.relays = []
 }
 
 RelayPool.prototype.on = function relayPoolOn(method, fn) {
@@ -47,12 +50,13 @@ RelayPool.prototype.send = function relayPoolSend(payload, relay_ids) {
 	}
 }
 
-RelayPool.prototype.setupHandlers = function relayPoolSetupHandlers()
+RelayPool.prototype.setupHandlers = function relayPoolSetupHandlers(target)
 {
 	// setup its message handlers with the ones we have already
 	const keys = Object.keys(this.onfn)
+	const relays = target ? [target] : this.relays
 	for (const handler of keys) {
-		for (const relay of this.relays) {
+		for (const relay of relays) {
 			relay.onfn[handler] = this.onfn[handler].bind(null, relay)
 		}
 	}
@@ -63,6 +67,7 @@ RelayPool.prototype.remove = function relayPoolRemove(url) {
 
 	for (const relay of this.relays) {
 		if (relay.url === url) {
+			relay.onfn = {}
 			relay.close()
 			this.relays.splice(i, 1)
 			return true
@@ -95,7 +100,7 @@ RelayPool.prototype.add = function relayPoolAdd(relay) {
 			return false
 
 		this.relays.push(relay)
-		this.setupHandlers()
+		this.setupHandlers(relay)
 		return true
 	}
 
@@ -104,7 +109,7 @@ RelayPool.prototype.add = function relayPoolAdd(relay) {
 
 	const r = Relay(relay, this.opts)
 	this.relays.push(r)
-	this.setupHandlers()
+	this.setupHandlers(r)
 	return true
 }
 

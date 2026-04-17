@@ -136,107 +136,25 @@ async function notify(event, relay) {
         if (tokens.length > 0) {
             const stringifiedWrappedEventToPush = JSON.stringify(createWrap(pubkeyTag[1], event))
 
-            if (tokensAsUrls.length > 0) {      
-                if (stringifiedWrappedEventToPush.length > 4000) {
-                    // too big, send a wake up.
-                    const wakeUpEvent = createWakeUpEvent(event, relay.url)
-                    const stringifiedWrappedEventToPush2 = JSON.stringify(createWrap(pubkeyTag[1], wakeUpEvent))
+            let ntfyBody = stringifiedWrappedEventToPush
+            let firebaseBody = stringifiedWrappedEventToPush
+            let isWake = stringifiedWrappedEventToPush.length > 4000
 
-                    tokensAsUrls.forEach(async function (tokenUrl) {
-                        fetch(tokenUrl, {
-                            method: 'POST',
-                            body: stringifiedWrappedEventToPush2,
-                            signal: AbortSignal.timeout(5000) // NTFY waits for 30 seconds to send a timeout when the user sent too many reqs
-                        }).then((response) => {
-                            if (!response.ok) {
-                                let after = response.headers.get('Retry-After');
-                                console.log("Error posting to NTFY", stringifiedWrappedEventToPush2.length, "chars.", tokenUrl, response.status, response.statusText, "retry after", after)
-                                if (response.status != 429) {
-                                    deleteToken(tokenUrl)
-                                }
-                            }
-                        }).catch(err => {
-                            console.log("Error posting to NTFY", stringifiedWrappedEventToPush2.length, "chars.", tokenUrl, err)
-                            //deleteToken(tokenUrl)
-                        })
-                    });
-                    console.log("NTFY Wake kind", event.kind, "event for", pubkeyTag[1], "with", stringifiedWrappedEventToPush2.length, "bytes")
-                } else {
-                    tokensAsUrls.forEach(async function (tokenUrl) {
-                        fetch(tokenUrl, {
-                            method: 'POST',
-                            body: stringifiedWrappedEventToPush,
-                            signal: AbortSignal.timeout(5000) // NTFY waits for 30 seconds to send a timeout when the user sent too many reqs
-                        }).then((response) => {
-                            if (!response.ok) {
-                                let after = response.headers.get('Retry-After');
-                                console.log("Error posting to NTFY", stringifiedWrappedEventToPush.length, "chars.", tokenUrl, response.status, response.statusText, "retry after", after)
-                                if (response.status != 429) {
-                                    deleteToken(tokenUrl)
-                                }
-                            }
-                        }).catch(err => {
-                            console.log("Error posting to NTFY", stringifiedWrappedEventToPush.length, "chars.", tokenUrl, err)
-                            //deleteToken(tokenUrl)
-                        })
-                    });
-                    console.log("NTFY New kind", event.kind, "event for", pubkeyTag[1], "with", stringifiedWrappedEventToPush.length, "bytes")
-                }
+            if (isWake) {
+                const wakeUpEvent = createWakeUpEvent(event, relay.url)
+                const wakeWrapped = JSON.stringify(createWrap(pubkeyTag[1], wakeUpEvent))
+                ntfyBody = wakeWrapped
+                firebaseBody = wakeWrapped
+            }
+
+            if (tokensAsUrls.length > 0) {
+                await runWithConcurrency(tokensAsUrls, 20, (tokenUrl) => postNtfy(tokenUrl, ntfyBody))
+                console.log("NTFY", isWake ? "Wake" : "New", "kind", event.kind, "event for", pubkeyTag[1], "with", ntfyBody.length, "bytes to", tokensAsUrls.length, "tokens")
             }
 
             if (firebaseTokens.length > 0) {
-                if (stringifiedWrappedEventToPush.length > 4000) {
-                    // too big, send a wake up.
-                    const wakeUpEvent = createWakeUpEvent(event, relay.url)
-                    const stringifiedWrappedEventToPush2 = JSON.stringify(createWrap(pubkeyTag[1], wakeUpEvent))
-
-                    const message = {
-                        data: {
-                            encryptedEvent: stringifiedWrappedEventToPush2
-                        },
-                        tokens: firebaseTokens
-                    };
-        
-                    admin.messaging().sendEachForMulticast(message).then((response) => {
-                        if (response.failureCount > 0) {
-                            response.responses.forEach((resp, idx) => {
-                                if (!resp.success) {
-                                    console.log('Failed: ', resp.error.code, resp.error.message, JSON.stringify(message).length, "chars");
-                                    if (resp.error.code === "messaging/registration-token-not-registered") {
-                                        console.log('Deleting Token ', tokens[idx]);
-                                        deleteToken(tokens[idx])
-                                    }
-                                }
-                            });
-                        } 
-                    });   
-                    
-                    console.log("Firebase Wake kind", event.kind, "event for", pubkeyTag[1], "with", stringifiedWrappedEventToPush2.length, "bytes")
-                } else {
-                    const message = {
-                        data: {
-                            encryptedEvent: stringifiedWrappedEventToPush
-                        },
-                        tokens: firebaseTokens
-                    };
-        
-                    admin.messaging().sendEachForMulticast(message).then((response) => {
-                        if (response.failureCount > 0) {
-                            response.responses.forEach((resp, idx) => {
-                                if (!resp.success) {
-                                    console.log('Failed: ', resp.error.code, resp.error.message, JSON.stringify(message).length, "chars");
-                                    if (resp.error.code === "messaging/registration-token-not-registered") {
-                                        console.log('Deleting Token ', tokens[idx]);
-                                        deleteToken(tokens[idx])
-                                    }
-                                }
-                            });
-                        } 
-                    });   
-                    
-                    console.log("Firebase New kind", event.kind, "event for", pubkeyTag[1], "with", stringifiedWrappedEventToPush.length, "bytes")
-                }
-                
+                await sendFirebaseMulticast(firebaseTokens, firebaseBody)
+                console.log("Firebase", isWake ? "Wake" : "New", "kind", event.kind, "event for", pubkeyTag[1], "with", firebaseBody.length, "bytes to", firebaseTokens.length, "tokens")
             }
         }
     }
@@ -249,10 +167,64 @@ function isValidHttpUrl(string) {
         givenURL = new URL(string);
     } catch (error) {
       //console.log("error is",error)
-        return false;  
+        return false;
     }
     return givenURL.protocol === "http:" || givenURL.protocol === "https:";
   }
+
+async function runWithConcurrency(items, limit, fn) {
+    let i = 0
+    const workers = new Array(Math.min(limit, items.length)).fill(0).map(async () => {
+        while (i < items.length) {
+            const idx = i++
+            await fn(items[idx], idx)
+        }
+    })
+    await Promise.all(workers)
+}
+
+async function postNtfy(tokenUrl, body) {
+    try {
+        const response = await fetch(tokenUrl, {
+            method: 'POST',
+            body: body,
+            signal: AbortSignal.timeout(5000)
+        })
+        if (!response.ok) {
+            const after = response.headers.get('Retry-After')
+            console.log("Error posting to NTFY", body.length, "chars.", tokenUrl, response.status, response.statusText, "retry after", after)
+            if (response.status != 429) {
+                deleteToken(tokenUrl)
+            }
+        }
+    } catch (err) {
+        console.log("Error posting to NTFY", body.length, "chars.", tokenUrl, err)
+    }
+}
+
+async function sendFirebaseMulticast(tokens, body) {
+    const FCM_BATCH = 500
+    for (let i = 0; i < tokens.length; i += FCM_BATCH) {
+        const chunk = tokens.slice(i, i + FCM_BATCH)
+        const message = { data: { encryptedEvent: body }, tokens: chunk }
+        try {
+            const response = await admin.messaging().sendEachForMulticast(message)
+            if (response.failureCount > 0) {
+                response.responses.forEach((resp, idx) => {
+                    if (!resp.success) {
+                        console.log('Failed: ', resp.error.code, resp.error.message, body.length, "chars")
+                        if (resp.error.code === "messaging/registration-token-not-registered") {
+                            console.log('Deleting Token ', chunk[idx])
+                            deleteToken(chunk[idx])
+                        }
+                    }
+                })
+            }
+        } catch (err) {
+            console.log("Error posting to Firebase", body.length, "chars.", err)
+        }
+    }
+}
 
 var isInRelayPollFunction = false
 
@@ -271,6 +243,8 @@ async function restartRelayPool() {
 
     if (relayPool) {
         relayPool.close()
+        relayPool = null
+        relayReliability.clear()
     }
 
     relayPool = RelayPool( Array.from( relays ), {reconnect: true} )
@@ -333,8 +307,9 @@ async function restartRelayPool() {
             console.log("Can't connect, deleting relay ", relay.url)
             relayPool.remove(relay.url)
             deleteRelay(relay.url)
-            relayReliability.set(relay.url, 0);
-        } 
+            relayReliability.delete(relay.url);
+            return
+        }
 
         const current = relayReliability.get(relay.url) || 0
 
@@ -348,7 +323,7 @@ async function restartRelayPool() {
             console.log("25 failures, deleting relay ", relay.url)
             relayPool.remove(relay.url)
             deleteRelay(relay.url)
-            relayReliability.set(relay.url, 0);
+            relayReliability.delete(relay.url);
         }
 
 		// console.log("Error", relay.url, e.message)

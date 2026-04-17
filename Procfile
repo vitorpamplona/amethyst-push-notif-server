@@ -1,1 +1,1 @@
-web: node index.mjs
+web: node --max-old-space-size=384 --max-semi-space-size=32 index.mjs
