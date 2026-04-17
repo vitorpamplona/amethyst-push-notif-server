@@ -5,7 +5,7 @@ Relay.prototype.wait_connected = async function relay_wait_connected(data) {
 	while (true) {
 		if (!this.manualClose && this.ws && this.ws.readyState !== 1) {
 			await sleep(retry)
-			retry *= Math.min(retry * 1.5, 5000)
+			retry = Math.min(retry * 1.5, 5000)
 		}
 		else {
 			return
@@ -111,8 +111,14 @@ Relay.prototype.on = function relayOn(method, fn) {
 Relay.prototype.close = function relayClose() {
 	this.manualClose = true
 	if (this.ws) {
+		this.ws.onmessage = null
+		this.ws.onopen = null
+		this.ws.onerror = null
+		this.ws.onclose = null
 		this.ws.close()
+		this.ws = null
 	}
+	this.onfn = {}
 }
 
 Relay.prototype.subscribe = function relay_subscribe(sub_id, filters) {
