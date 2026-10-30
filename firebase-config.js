@@ -1,4 +1,5 @@
-var admin = require("firebase-admin");
+const { initializeApp, cert } = require("firebase-admin/app");
+const { getMessaging } = require("firebase-admin/messaging");
 
 //path to the json you just downloaded
 var serviceAccount = process.env.FIREBASE_CREDENTIAL ? 
@@ -7,8 +8,8 @@ var serviceAccount = process.env.FIREBASE_CREDENTIAL ?
   ) : require("../amethyst-firebase.json")
 
 //init 
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
+const app = initializeApp({
+  credential: cert(serviceAccount),
 })
 
-module.exports.admin = admin
+module.exports.messaging = getMessaging(app)

@@ -1,6 +1,6 @@
 import express from 'express'
 import bodyparser from 'body-parser'
-import { admin } from './firebase-config.js'
+import { messaging } from './firebase-config.js'
 import { nip44 } from '@nostr/tools'
 import { finalizeEvent, generateSecretKey, verifyEvent } from '@nostr/tools/pure'
 import { RelayPool } from './relay-pool.js'
@@ -208,7 +208,7 @@ async function sendFirebaseMulticast(tokens, body) {
         const chunk = tokens.slice(i, i + FCM_BATCH)
         const message = { data: { encryptedEvent: body }, tokens: chunk }
         try {
-            const response = await admin.messaging().sendEachForMulticast(message)
+            const response = await messaging.sendEachForMulticast(message)
             if (response.failureCount > 0) {
                 response.responses.forEach((resp, idx) => {
                     if (!resp.success) {

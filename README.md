@@ -26,7 +26,7 @@ FIREBASE_CREDENTIAL = BASE64DATA
 
 # Development Overview
 
-This is a NodeJS + Express app. 
+This is a NodeJS + Express app. It targets Node.js 26 LTS (see `engines` in `package.json`).
 
 ## Running
 

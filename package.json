@@ -2,21 +2,25 @@
   "name": "amethyst-notif-server",
   "version": "0.0.1",
   "description": "Amethyst's Push Notification Server",
-  "main": "index.js",
+  "main": "index.mjs",
   "scripts": {
+    "start": "node index.mjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@nostr/tools": "npm:@jsr/nostr__tools@^2.23.3",
-    "body-parser": "^2.2.2",
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1",
-    "firebase-admin": "^13.8.0",
-    "lru-cache": "^11.3.5",
-    "pg": "^8.20.0",
+    "@nostr/tools": "npm:@jsr/nostr__tools@^2.25.4",
+    "body-parser": "^2.4.0",
+    "dotenv": "^18.0.9",
+    "express": "^5.3.0",
+    "firebase-admin": "^14.5.0",
+    "lru-cache": "^11.5.3",
+    "pg": "^8.23.1",
     "pg-format": "^1.0.4",
-    "ws": "^8.20.0"
+    "ws": "^8.22.0"
+  },
+  "engines": {
+    "node": "26.x"
   }
 }
