@@ -1,6 +1,6 @@
 import express from 'express'
 import bodyparser from 'body-parser'
-import { admin } from './firebase-config.js'
+import { messaging } from './firebase-config.js'
 import { nip44 } from '@nostr/tools'
 import { finalizeEvent, generateSecretKey, verifyEvent } from '@nostr/tools/pure'
 import { RelayPool } from './relay-pool.js'
@@ -101,7 +101,7 @@ async function register(events) {
             })
 
         if (tokenTag[1] && veryOk && relayTags.length > 0) {
-            newRelays = await checkIfThereIsANewRelay(relayTags)
+            newRelays = (await checkIfThereIsANewRelay(relayTags)) || newRelays
 
             await registerInDatabaseTuples(relayTags.map(relayUrl => [event.pubkey,relayUrl || null,tokenTag[1]]))
         } else {
@@ -208,7 +208,7 @@ async function sendFirebaseMulticast(tokens, body) {
         const chunk = tokens.slice(i, i + FCM_BATCH)
         const message = { data: { encryptedEvent: body }, tokens: chunk }
         try {
-            const response = await admin.messaging().sendEachForMulticast(message)
+            const response = await messaging.sendEachForMulticast(message)
             if (response.failureCount > 0) {
                 response.responses.forEach((resp, idx) => {
                     if (!resp.success) {
@@ -233,6 +233,16 @@ async function restartRelayPool() {
     if (isInRelayPollFunction) return 
     isInRelayPollFunction = true
 
+    try {
+        await connectRelayPool()
+    } catch (e) {
+        console.log("Error restarting relay pool", e)
+    } finally {
+        isInRelayPollFunction = false
+    }
+}
+
+async function connectRelayPool() {
     let relays = await getAllRelays()
 
     if (relayPool) {
@@ -330,7 +340,6 @@ async function restartRelayPool() {
 	})
 
     console.log("Restarted pool with", relays.length, "relays")
-    isInRelayPollFunction = false
 }
 
 function createWrap(recipientPubkey, event, tags = []) {
