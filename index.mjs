@@ -101,7 +101,7 @@ async function register(events) {
             })
 
         if (tokenTag[1] && veryOk && relayTags.length > 0) {
-            newRelays = await checkIfThereIsANewRelay(relayTags)
+            newRelays = (await checkIfThereIsANewRelay(relayTags)) || newRelays
 
             await registerInDatabaseTuples(relayTags.map(relayUrl => [event.pubkey,relayUrl || null,tokenTag[1]]))
         } else {
@@ -233,6 +233,16 @@ async function restartRelayPool() {
     if (isInRelayPollFunction) return 
     isInRelayPollFunction = true
 
+    try {
+        await connectRelayPool()
+    } catch (e) {
+        console.log("Error restarting relay pool", e)
+    } finally {
+        isInRelayPollFunction = false
+    }
+}
+
+async function connectRelayPool() {
     let relays = await getAllRelays()
 
     if (relayPool) {
@@ -330,7 +340,6 @@ async function restartRelayPool() {
 	})
 
     console.log("Restarted pool with", relays.length, "relays")
-    isInRelayPollFunction = false
 }
 
 function createWrap(recipientPubkey, event, tags = []) {
