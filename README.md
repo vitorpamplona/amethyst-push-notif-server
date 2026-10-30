@@ -3,11 +3,11 @@ A simple push notification server for Nostr events.
 
 # Deployment Overview
 
-This repo is setup to be automatically deployed to Heroku
+This repo is set up to be automatically deployed to Heroku
 
-## 1. Create a service key from firebase
+## 1. Create a service key from Firebase
 
-Go to Firebase, services and download the service credentials.
+Go to Firebase, Services, and download the service credentials.
 
 Convert it to a Base64 representation: 
 
