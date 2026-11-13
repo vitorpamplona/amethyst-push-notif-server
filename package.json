@@ -12,13 +12,13 @@
   "dependencies": {
     "@nostr/tools": "npm:@jsr/nostr__tools@^2.25.4",
     "body-parser": "^2.4.0",
-    "dotenv": "^18.0.9",
+    "dotenv": "^18.0.10",
     "express": "^5.3.0",
     "firebase-admin": "^14.5.0",
     "lru-cache": "^11.5.3",
     "pg": "^8.23.1",
     "pg-format": "^1.0.4",
-    "ws": "^8.22.1"
+    "ws": "^8.22.2"
   },
   "engines": {
     "node": "26.x"
